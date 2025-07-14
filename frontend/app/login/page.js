@@ -143,7 +143,7 @@ export default function Login() {
       {/* Back to Home Button */}
       <div className="absolute top-6 left-6 z-30">
         <Link href="/">
-          <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm">
+          <Button variant="ghost" className="text-white/80 hover:text-white cursor-pointer hover:bg-white/10 backdrop-blur-sm">
             <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
             Back to Home
           </Button>
@@ -220,7 +220,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-3 h-4 w-4 text-white/40 hover:text-white/60 transition-colors"
+                      className="absolute cursor-pointer right-3 top-3 h-4 w-4 text-white/40 hover:text-white/60 transition-colors"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>

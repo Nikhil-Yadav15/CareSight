@@ -187,7 +187,7 @@ export default function Signup() {
       {/* Back to Home Button */}
       <div className="absolute top-6 left-6 z-30">
         <Link href="/">
-          <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 backdrop-blur-sm">
+          <Button variant="ghost" className="text-white/80 cursor-pointer hover:text-white hover:bg-white/10 backdrop-blur-sm">
             <ArrowRight className="w-4 h-4 mr-2 rotate-180" />
             Back to Home
           </Button>
@@ -284,7 +284,7 @@ export default function Signup() {
                     <button
                       type="button"
                       onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-3 h-4 w-4 text-white/40 hover:text-white/60 transition-colors"
+                      className="absolute right-3 top-3 h-4 w-4 cursor-pointer text-white/40 hover:text-white/60 transition-colors"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -325,7 +325,7 @@ export default function Signup() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none border-0"
+                  className="w-full h-12 cursor-pointer bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none border-0"
                 >
                   {loading ? (
                     <>
@@ -367,7 +367,7 @@ export default function Signup() {
               {/* Sign In Link */}
               <div className="text-center">
                 <Link href="/login">
-                  <Button variant="outline" className="w-full h-12 border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30 backdrop-blur-sm transition-all duration-300">
+                  <Button variant="outline" className="w-full h-12 cursor-pointer border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/30 backdrop-blur-sm transition-all duration-300">
                     Sign In Instead
                   </Button>
                 </Link>
