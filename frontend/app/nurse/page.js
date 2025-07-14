@@ -302,7 +302,7 @@ export default function NurseDashboard() {
                     variant="outline"
                     size="sm"
                     disabled={refreshing}
-                    className={`${darkMode ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-blue-200 bg-white/80 hover:bg-blue-50'} transition-all duration-300`}
+                    className={`${darkMode ? 'border-white/20 cursor-pointer bg-white/10 hover:bg-white/20 text-white' : 'border-blue-200 bg-white/80 hover:bg-blue-50'} transition-all duration-300`}
                   >
                     {refreshing ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -314,7 +314,7 @@ export default function NurseDashboard() {
                     onClick={toggleTheme}
                     variant="outline"
                     size="sm"
-                    className={`${darkMode ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-blue-200 bg-white/80 hover:bg-blue-50'} transition-all duration-300`}
+                    className={`${darkMode ? 'border-white/20 cursor-pointer bg-white/10 hover:bg-white/20 text-white' : 'border-blue-200 bg-white/80 hover:bg-blue-50'} transition-all duration-300`}
                   >
                     {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                   </Button>
@@ -592,7 +592,7 @@ export default function NurseDashboard() {
                                 onClick={() => setEditingPatient(null)}
                                 variant="outline"
                                 size="sm"
-                                className={`${darkMode ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-gray-300 bg-white hover:bg-gray-50'} transition-all duration-300`}
+                                className={`${darkMode ? 'border-white/20 cursor-pointer bg-white/10 hover:bg-white/20 text-white' : 'border-gray-300 bg-white hover:bg-gray-50'} transition-all duration-300`}
                               >
                                 <X className="w-4 h-4 mr-2" />
                                 Cancel
@@ -601,7 +601,7 @@ export default function NurseDashboard() {
                                 onClick={() => handleSave(patient.id)}
                                 disabled={saving}
                                 size="sm"
-                                className={`${themeClasses.button} text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
+                                className={`${themeClasses.button} cursor-pointer text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
                               >
                                 {saving ? (
                                   <>
@@ -620,7 +620,7 @@ export default function NurseDashboard() {
                             <Button
                               onClick={() => handleEdit(patient)}
                               size="sm"
-                              className={`${themeClasses.button} text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
+                              className={`${themeClasses.button} cursor-pointer text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
                             >
                               <Edit3 className="w-4 h-4 mr-2" />
                               Edit Patient

@@ -135,7 +135,7 @@ export default function Home() {
                 onClick={toggleDarkMode}
                 variant="outline"
                 size="icon"
-                className={`relative w-10 h-10 rounded-full transition-all duration-500 ${
+                className={`relative w-10 h-10 rounded-full transition-all duration-500 cursor-pointer ${
                   isDarkMode 
                     ? 'border-gray-600 bg-gray-800 hover:bg-gray-700' 
                     : 'border-blue-200 bg-white hover:bg-blue-50'
@@ -158,7 +158,7 @@ export default function Home() {
               <Button 
                 onClick={handleLoginClick}
                 variant="outline"
-                className={` transition-all text-lg duration-300 ${
+                className={` transition-all text-lg duration-300 cursor-pointer ${
                   isDarkMode 
                     ? 'hover:bg-gray-800 border-gray-600 text-white' 
                     : 'hover:bg-blue-50 border-blue-200'
@@ -201,7 +201,7 @@ export default function Home() {
             <Button 
               onClick={handleGetStarted}
               size="lg"
-              className={`bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 ${
+              className={`bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 ${
                 isDarkMode ? 'shadow-blue-900/50' : ''
               }`}
             >
@@ -303,7 +303,7 @@ export default function Home() {
           <Button 
             onClick={handleLoginClick}
             size="lg"
-            className={`bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-12 py-4 text-xl font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 ${
+            className={`bg-gradient-to-r cursor-pointer from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-12 py-4 text-xl font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 ${
               isDarkMode ? 'shadow-green-900/50' : ''
             }`}
           >

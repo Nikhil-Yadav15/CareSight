@@ -35,7 +35,7 @@ export default function Layout({ children }) {
                 </span>
                 <button
                   onClick={handleSignOut}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="bg-red-500 cursor-pointer hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   Sign Out
                 </button>

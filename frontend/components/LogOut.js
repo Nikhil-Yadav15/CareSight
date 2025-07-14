@@ -28,7 +28,7 @@ export function SignOutButton({ darkMode }) {
         variant="outline"
         size="lg"
         className={cn(
-          "group relative overflow-hidden transition-all duration-200",
+          " cursor-pointer group relative overflow-hidden transition-all duration-200",
           "hover:shadow-sm active:shadow-xs",
           "rounded-[10px]",
           "border-2", // Slightly thicker border

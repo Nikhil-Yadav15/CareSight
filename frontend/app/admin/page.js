@@ -290,7 +290,7 @@ export default function AdminDashboard() {
                     onClick={toggleTheme}
                     variant="outline"
                     size="sm"
-                    className={`${darkMode ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-blue-200 bg-white/80 hover:bg-blue-50'} transition-all duration-300`}
+                    className={`${darkMode ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-blue-200 bg-white/80 hover:bg-blue-50'} cursor-pointer transition-all duration-300`}
                   >
                     {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                   </Button>
@@ -350,7 +350,7 @@ export default function AdminDashboard() {
                 </div>
                 <Button
                   onClick={() => setShowAddNurse(!showAddNurse)}
-                  className={`${themeClasses.button} text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
+                  className={`${themeClasses.button} text-white shadow-lg hover:shadow-xl transition-all cursor-pointer duration-300 transform hover:scale-105`}
                 >
                   {showAddNurse ? (
                     <>
@@ -440,7 +440,7 @@ export default function AdminDashboard() {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-3 h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors"
+                            className="absolute right-3 top-3 cursor-pointer h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors"
                           >
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
@@ -450,7 +450,7 @@ export default function AdminDashboard() {
                       <Button
                         type="submit"
                         disabled={createLoading}
-                        className={`w-full h-12 ${themeClasses.button} text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50`}
+                        className={`w-full h-12 ${themeClasses.button} text-white cursor-pointer font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50`}
                       >
                         {createLoading ? (
                           <>
@@ -594,7 +594,7 @@ export default function AdminDashboard() {
                           <Button
                             onClick={() => saveAssignment(patient.id)}
                             size="sm"
-                            className={`${themeClasses.button} text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
+                            className={`${themeClasses.button} cursor-pointer text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
                           >
                             <Save className="w-3 h-3 mr-1" />
                             Save

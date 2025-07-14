@@ -322,7 +322,7 @@ export default function PatientDashboard() {
                     onClick={toggleTheme}
                     variant="outline"
                     size="sm"
-                    className={`${darkMode ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-blue-200 bg-white/80 hover:bg-blue-50'} transition-all duration-300`}
+                    className={`${darkMode ? 'border-white/20 cursor-pointer bg-white/10 hover:bg-white/20 text-white' : 'border-blue-200 bg-white/80 hover:bg-blue-50'} transition-all duration-300`}
                   >
                     {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                   </Button>
@@ -398,7 +398,7 @@ export default function PatientDashboard() {
                   {!editing && (
                     <Button
                       onClick={() => setEditing(true)}
-                      className={`${themeClasses.button} text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
+                      className={`${themeClasses.button} text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}
                     >
                       <Edit3 className="w-4 h-4 mr-2" />
                       Edit Profile
@@ -548,7 +548,7 @@ export default function PatientDashboard() {
                     <Button
                       onClick={handleCancel}
                       variant="outline"
-                      className={`${darkMode ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-gray-300 bg-white hover:bg-gray-50'} transition-all duration-300`}
+                      className={`${darkMode ? 'border-white/20 cursor-pointer bg-white/10 hover:bg-white/20 text-white' : 'border-gray-300 bg-white hover:bg-gray-50'} transition-all duration-300`}
                     >
                       <X className="w-4 h-4 mr-2" />
                       Cancel
@@ -556,7 +556,7 @@ export default function PatientDashboard() {
                     <Button
                       onClick={handleSave}
                       disabled={saving || uploading}
-                      className={`${themeClasses.button} text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50`}
+                      className={`${themeClasses.button} cursor-pointer text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50`}
                     >
                       {saving ? (
                         <>
@@ -706,7 +706,7 @@ export default function PatientDashboard() {
                     <h3 className={`text-lg font-semibold ${themeClasses.text} mb-2`}>Emergency Contact</h3>
                     <p className={`text-sm ${themeClasses.textMuted}`}>Quick access to emergency services</p>
                     <Button
-                      className={`mt-3 ${themeClasses.button} text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
+                      className={`mt-3 ${themeClasses.button} cursor-pointer text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
                       onClick={() => toast.info('Contacting emergency services...', { duration: 3000 })}
                     >
                       Call Now
@@ -721,7 +721,7 @@ export default function PatientDashboard() {
                     <h3 className={`text-lg font-semibold ${themeClasses.text} mb-2`}>Schedule Appointment</h3>
                     <p className={`text-sm ${themeClasses.textMuted}`}>Book a new appointment with your nurse</p>
                     <Button
-                      className={`mt-3 ${themeClasses.button} text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
+                      className={`mt-3 ${themeClasses.button} cursor-pointer text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
                       onClick={() => toast.info('Appointment scheduling coming soon!', { duration: 3000 })}
                     >
                       Book Now
@@ -736,7 +736,7 @@ export default function PatientDashboard() {
                     <h3 className={`text-lg font-semibold ${themeClasses.text} mb-2`}>Health Records</h3>
                     <p className={`text-sm ${themeClasses.textMuted}`}>View your medical history and records</p>
                     <Button
-                      className={`mt-3 ${themeClasses.button} text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
+                      className={`mt-3 ${themeClasses.button} cursor-pointer text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
                       onClick={() => toast.info('Health records access coming soon!', { duration: 3000 })}
                     >
                       View Records
