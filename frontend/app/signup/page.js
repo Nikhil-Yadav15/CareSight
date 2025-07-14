@@ -12,8 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { SparklesCore } from '@/components/ui/sparkles';
-import { BackgroundBeams } from '@/components/ui/background-beams';
 import { 
   UserPlus, 
   Mail, 
@@ -31,6 +29,18 @@ import {
   Sparkles,
   Star
 } from 'lucide-react';
+
+import dynamic from 'next/dynamic';
+
+const BackgroundBeams = dynamic(() =>
+  import('@/components/ui/background-beams').then((mod) => mod.BackgroundBeams),
+  { ssr: false }
+);
+
+const SparklesCore = dynamic(() =>
+  import('@/components/ui/sparkles').then((mod) => mod.SparklesCore),
+  { ssr: false }
+);
 
 export default function Signup() {
   const { user } = useAuth();
