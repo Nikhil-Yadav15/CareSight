@@ -1,5 +1,3 @@
-// !UI
-
 "use client";
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,8 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { SparklesCore } from '@/components/ui/sparkles';
-import { BackgroundBeams } from '@/components/ui/background-beams';
 import { toast } from 'sonner';
 import { SignOutButton } from "@/components/LogOut"
 import { 
@@ -40,6 +36,18 @@ import {
   Loader2,
   ArrowRight
 } from 'lucide-react';
+
+import dynamic from 'next/dynamic';
+
+const BackgroundBeams = dynamic(() =>
+  import('@/components/ui/background-beams').then((mod) => mod.BackgroundBeams),
+  { ssr: false }
+);
+
+const SparklesCore = dynamic(() =>
+  import('@/components/ui/sparkles').then((mod) => mod.SparklesCore),
+  { ssr: false }
+);
 
 export default function AdminDashboard() {
   const { user } = useAuth();
