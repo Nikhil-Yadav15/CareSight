@@ -17,8 +17,8 @@ export default function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   useEffect(() => {
+    // @ts-expect-error: Global variable injected at runtime
     if (typeof __initial_auth_token !== 'undefined') {
       setIsAuthReady(true);
       setUserId('authenticated-user');
