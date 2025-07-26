@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       ...config.resolve.fallback,
       fs: false,
     };
+    config.externals.push({ encoding: 'empty-module' });
     return config;
   },
 };
