@@ -19,6 +19,7 @@
     "next": "15.4.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-scroll": "^1.8.9",
     "three": "^0.178.0"
   },
   "devDependencies": {
