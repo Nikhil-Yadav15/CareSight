@@ -6,7 +6,7 @@ import * as THREE from 'three';
 export default function App() {
   const mountRef = useRef(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Handle scroll effect for navbar
