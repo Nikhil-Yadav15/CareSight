@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-// @ts-expect-error
+// @ts-expect-error: required to bypass missing type definitions for library
 import * as THREE from 'three';
 
 export default function App() {
