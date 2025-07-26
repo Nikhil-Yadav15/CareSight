@@ -1,12 +1,11 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-// @ts-expect-error: required to bypass missing type definitions for library
 import * as THREE from 'three';
 
 export default function App() {
   const mountRef = useRef(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Handle scroll effect for navbar
@@ -17,8 +16,8 @@ export default function App() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  
   useEffect(() => {
-    // @ts-expect-error: Global variable injected at runtime
     if (typeof __initial_auth_token !== 'undefined') {
       setIsAuthReady(true);
       setUserId('authenticated-user');
