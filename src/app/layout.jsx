@@ -1,12 +1,11 @@
 import './globals.css';
-import { ReactNode } from 'react';
 
 export const metadata = {
-  title: 'Supabase + Next.js App',
+  title: 'CareSight',
   description: 'Full RLS-enabled system',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>{children}</body>
