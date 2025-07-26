@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-// @ts-ignore
+// @ts-expect-error
 import * as THREE from 'three';
 
 export default function App() {
