@@ -105,7 +105,7 @@ const MedicationForm: React.FC<MedicationFormProps> = React.memo(({
     timing: '',
     instructions: '',
   });
-
+MedicationForm.displayName = 'MedicationForm';
   // Use useEffect to initialize form when initialMedication changes (for editing)
   useEffect(() => {
     if (initialMedication) {
