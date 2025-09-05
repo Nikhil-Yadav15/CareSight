@@ -6,10 +6,8 @@ import { createClient } from '@/lib/supabaseClient';
 import { animateScroll as scroll } from 'react-scroll';
 
 export default function EyeGazeControlPage() {
-  // YouTube gaze states
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isYouTubePlaying, setIsYouTubePlaying] = useState(false);
-//   const [youtubeIframe, setYoutubeIframe] = useState(null);
   const youTubeVideos = [
     { 
       id: "tgbNymZ7vqY",
@@ -29,7 +27,7 @@ export default function EyeGazeControlPage() {
     }
   ];
   
-  //   !
+  
   const generateYouTubeURL = (videoId, isPlaying) => {
       if (isPlaying) {
           return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&controls=1&rel=0&mute=1`;
@@ -41,10 +39,7 @@ export default function EyeGazeControlPage() {
     const [currentYouTubeVideo, setCurrentYouTubeVideo] = useState(
         generateYouTubeURL(youTubeVideos[0]?.id, false)
       );
-//   useEffect(() => {
-//     const iframe = document.getElementById('youtube-player');
-//     setYoutubeIframe(iframe);
-//   }, [currentYouTubeVideo]);
+
 
   const supabase = createClient();
   const videoRef = useRef(null);
@@ -169,7 +164,7 @@ export default function EyeGazeControlPage() {
         }
 
         setPatientData(patient);
-        console.log('✅ Patient data loaded:', patient);
+
 
       } catch (err) {
         console.error('❌ Fetch patient error:', err.message);
@@ -541,7 +536,6 @@ export default function EyeGazeControlPage() {
   };
 
   const activateButton = async (buttonId) => {
-    console.log(`Activated: ${buttonId}`);
 
     setActivatedButton(buttonId);
     setTimeout(() => setActivatedButton(null), 2000);
@@ -550,9 +544,6 @@ export default function EyeGazeControlPage() {
       navigator.vibrate(200);
     }
 
-    if (currentEmotion) {
-      console.log(`Button ${buttonId} activated with emotion: ${currentEmotion} (${(emotionConfidence * 100).toFixed(1)}%)`);
-    }
 
     switch (buttonId) {
       case 'call-nurse':
@@ -601,7 +592,6 @@ export default function EyeGazeControlPage() {
       case 'bollywood':
         const selectedButton = buttons.find(button => button.id === buttonId);
         if (selectedButton?.link) {
-          console.log("Selected: ", selectedButton.link);
           setSpotifyLink(selectedButton.link);
         }
         break;
@@ -909,7 +899,6 @@ export default function EyeGazeControlPage() {
     setGazeDirection({ x: 0.5, y: 0.5 });
     
     if (CALIBRATION_POINTS.length === 0) {
-      console.error('CALIBRATION_POINTS array is empty');
       setIsCalibrating(false);
       showNotification('❌ Calibration points not defined', 'error');
     }
@@ -950,7 +939,6 @@ export default function EyeGazeControlPage() {
 
       setMappingParams({ a_x, b_x, a_y, b_y });
       setIsCalibrated(true);
-      console.log('Calibration complete:', { calibrationPoints, mappingParams });
       showNotification('🎯 Calibration completed!', 'success');
     } else {
       showNotification('❌ Calibration incomplete, please try again', 'error');
