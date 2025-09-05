@@ -1,10 +1,75 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Upload, User, Mail, Lock, Phone, MapPin, Calendar, Activity, Home, Camera, Users, Plus, Minus, Hospital } from 'lucide-react';
+import { Upload, User, Mail, Lock, Phone, MapPin, Calendar, Activity, Home, Camera, Users, Plus, Minus, Hospital, ChevronRight } from 'lucide-react';
 import { createClient } from '@/lib/supabaseClient';
 
 const supabase = createClient();
+
+const roleDetails = {
+  hospital: { title: "Hospital", icon: Hospital, description: "Register as a hospital administrator." },
+  nurse: { title: "Nurse", icon: User, description: "Register as a healthcare professional." },
+  patients: { title: "Patient", icon: Users, description: "Register a new patient profile." },
+};
+
+const RoleCard = ({ role, currentRole, setRole, Icon }) => (
+  <button
+    type="button"
+    onClick={() => setRole(role)}
+    className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 cursor-pointer
+      ${currentRole === role
+        ? 'bg-blue-100 text-blue-700 border-blue-400 shadow-md'
+        : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-blue-300'
+      }
+    `}
+  >
+    <div className="flex items-center">
+      <div className={`p-2 rounded-full ${currentRole === role ? 'bg-blue-200' : 'bg-gray-200'}`}>
+        <Icon className={`w-5 h-5 ${currentRole === role ? 'text-blue-600' : 'text-gray-500'}`} />
+      </div>
+      <span className={`font-semibold ml-3 ${currentRole === role ? 'text-blue-800' : 'text-gray-700'}`}>{roleDetails[role].title}</span>
+    </div>
+    <ChevronRight className={`w-5 h-5 transition-transform ${currentRole === role ? 'text-blue-600' : 'text-gray-400'}`} />
+  </button>
+);
+
+const FormInput = ({ label, type, placeholder, value, onChange, Icon, required = false }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+      <Icon className="w-4 h-4 mr-2 text-gray-400" />
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-gray-800 placeholder-gray-400"
+      required={required}
+    />
+  </div>
+);
+
+const FormSelect = ({ label, value, onChange, options, Icon, required = false }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+      <Icon className="w-4 h-4 mr-2 text-gray-400" />
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white text-gray-800"
+      required={required}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -70,6 +135,7 @@ export default function RegisterPage() {
   ];
 
   const relationshipOptions = [
+    { value: '', label: 'Select Relationship' },
     { value: 'spouse', label: 'Spouse' },
     { value: 'parent', label: 'Parent' },
     { value: 'child', label: 'Child' },
@@ -81,7 +147,6 @@ export default function RegisterPage() {
     { value: 'other', label: 'Other' }
   ];
 
-  // Function to get dashboard route based on role
   const getDashboardRoute = (role: string) => {
     switch (role) {
       case 'hospital':
@@ -102,21 +167,15 @@ export default function RegisterPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         alert('File size must be less than 5MB');
         return;
       }
-
-      // Check file type
       if (!file.type.startsWith('image/')) {
         alert('Please select an image file');
         return;
       }
-
       setForm({ ...form, photo_file: file });
-
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -125,7 +184,6 @@ export default function RegisterPage() {
     }
   };
 
-  // Family member functions
   const addFamilyMember = () => {
     const newMember = {
       name: '',
@@ -153,7 +211,6 @@ export default function RegisterPage() {
     setForm({ ...form, family: updatedFamily });
   };
 
-  // Fetch hospital list once for nurse/patient registration
   useEffect(() => {
     async function fetchHospitals() {
       const { data } = await supabase.from('hospital').select('id, name');
@@ -161,12 +218,10 @@ export default function RegisterPage() {
         setHospitals(data);
       }
     }
-
     if (role !== 'hospital') fetchHospitals();
   }, [role]);
 
   const handleRegister = async () => {
-    // Basic validation
     if (!form.name || !form.email || !form.password || !form.phone_number) {
       alert('Please fill in all required fields');
       return;
@@ -186,9 +241,7 @@ export default function RegisterPage() {
           nurse_ids: [],
           patient_ids: [],
         };
-      }
-
-      else if (role === 'nurse') {
+      } else if (role === 'nurse') {
         const match = hospitals.find(
           (h: any) => h.name.toLowerCase() === form.hospital_name_input.toLowerCase()
         );
@@ -209,9 +262,7 @@ export default function RegisterPage() {
           shift: new Date().toISOString(),
           patient_ids: [],
         };
-      }
-
-      else if (role === 'patients') {
+      } else if (role === 'patients') {
         const match = hospitals.find(
           (h: any) => h.name.toLowerCase() === form.hospital_name_input.toLowerCase()
         );
@@ -222,15 +273,14 @@ export default function RegisterPage() {
           return;
         }
 
-        // Upload image to Supabase Storage
         let photo_url = form.photo_url;
         if (form.photo_file) {
           const fileExt = form.photo_file.name.split('.').pop();
           const fileName = `${Date.now()}.${fileExt}`;
           const filePath = `patient_photos/${fileName}`;
 
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('patient-photos') // Bucket name
+          const { error: uploadError } = await supabase.storage
+            .from('patient-photos')
             .upload(filePath, form.photo_file);
 
           if (uploadError) {
@@ -264,10 +314,8 @@ export default function RegisterPage() {
         };
       }
 
-      const table =
-        role === 'hospital' ? 'hospital' : role === 'nurse' ? 'nurse' : 'patients';
+      const table = role === 'hospital' ? 'hospital' : role === 'nurse' ? 'nurse' : 'patients';
 
-      // Insert the new record
       const { data: insertedData, error } = await supabase
         .from(table)
         .insert([payload])
@@ -279,7 +327,6 @@ export default function RegisterPage() {
         return;
       }
 
-      // Update hospital's nurse_ids or patient_ids array
       if (role === 'nurse' || role === 'patients') {
         const match = hospitals.find(
           (h: any) => h.name.toLowerCase() === form.hospital_name_input.toLowerCase()
@@ -288,7 +335,6 @@ export default function RegisterPage() {
         if (match && insertedData && insertedData.length > 0) {
           const newUserId = insertedData[0].id;
 
-          // Get current hospital data
           const { data: hospitalData, error: hospitalFetchError } = await supabase
             .from('hospital')
             .select('nurse_ids, patient_ids')
@@ -301,7 +347,6 @@ export default function RegisterPage() {
             return;
           }
 
-          // Update the appropriate array
           let updateData = {};
           if (role === 'nurse') {
             const updatedNurseIds = [...(hospitalData.nurse_ids || []), newUserId];
@@ -311,7 +356,6 @@ export default function RegisterPage() {
             updateData = { patient_ids: updatedPatientIds };
           }
 
-          // Update hospital record
           const { error: hospitalUpdateError } = await supabase
             .from('hospital')
             .update(updateData)
@@ -326,18 +370,13 @@ export default function RegisterPage() {
       }
 
       if (insertedData && insertedData.length > 0) {
-        // Store user data in localStorage
         localStorage.setItem('user_id', insertedData[0].id);
         localStorage.setItem('role', role);
         localStorage.setItem('user_name', insertedData[0].name);
-
         alert('✅ Registered Successfully!');
-
-        // Navigate to role-specific dashboard
         const dashboardRoute = getDashboardRoute(role);
         router.push(dashboardRoute);
       }
-
     } catch (error) {
       console.error('Registration error:', error);
       alert('❌ Registration failed. Please try again.');
@@ -346,400 +385,198 @@ export default function RegisterPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      <div className="max-w-2xl w-full p-8 bg-gray-800 rounded-2xl shadow-xl border border-gray-700">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-white mb-3">Create Your Account</h1>
-          <p className="text-gray-400 text-lg">Join our healthcare network today</p>
-        </div>
-
-        {/* Role Selection */}
-        <div className="mb-8">
-          <label className="block text-sm font-semibold text-gray-200 mb-2">
-            <User className="inline w-5 h-5 mr-2 text-blue-400" />
-            I am a:
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button
-              type="button"
-              onClick={() => setRole('hospital')}
-              className={`flex items-center justify-center px-6 py-3 rounded-xl border-2 transition-all duration-200
-                ${role === 'hospital' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-gray-700 text-blue-300 border-gray-600 hover:border-blue-500 hover:bg-gray-600'}
-              `}
-            >
-              <Hospital className="w-5 h-5 mr-2" /> Hospital
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole('nurse')}
-              className={`flex items-center justify-center px-6 py-3 rounded-xl border-2 transition-all duration-200
-                ${role === 'nurse' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-gray-700 text-blue-300 border-gray-600 hover:border-blue-500 hover:bg-gray-600'}
-              `}
-            >
-              <User className="w-5 h-5 mr-2" /> Nurse
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole('patients')}
-              className={`flex items-center justify-center px-6 py-3 rounded-xl border-2 transition-all duration-200
-                ${role === 'patients' ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-gray-700 text-blue-300 border-gray-600 hover:border-blue-500 hover:bg-gray-600'}
-              `}
-            >
-              <Users className="w-5 h-5 mr-2" /> Patient
-            </button>
-          </div>
-        </div>
-
-        {/* Common Fields */}
-        <div className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <User className="inline w-4 h-4 mr-1 text-gray-400" />
-              Full Name <span className="text-red-400">*</span>
-            </label>
-            <input
+  const renderFormFields = () => {
+    switch (role) {
+      case 'hospital':
+        return (
+          <div className="space-y-6">
+            <FormInput
+              label="Hospital Address"
               type="text"
-              placeholder="e.g., John Doe / City General Hospital"
-              value={form.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white placeholder-gray-500"
+              placeholder="Enter full hospital address"
+              value={form.address}
+              onChange={(value) => handleChange('address', value)}
+              Icon={MapPin}
+            />
+          </div>
+        );
+      case 'nurse':
+        return (
+          <div className="space-y-6">
+            <FormSelect
+              label="Affiliated Hospital"
+              value={form.hospital_name_input}
+              onChange={(value) => handleChange('hospital_name_input', value)}
+              options={[{ value: '', label: 'Select Hospital' }, ...hospitals.map(h => ({ value: h.name, label: h.name }))]}
+              Icon={Hospital}
               required
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Mail className="inline w-4 h-4 mr-1 text-gray-400" />
-              Email Address <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="email"
-              placeholder="e.g., email@example.com"
-              value={form.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white placeholder-gray-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Lock className="inline w-4 h-4 mr-1 text-gray-400" />
-              Password <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="password"
-              placeholder="Create a strong password"
-              value={form.password}
-              onChange={(e) => handleChange('password', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white placeholder-gray-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Phone className="inline w-4 h-4 mr-1 text-gray-400" />
-              Phone Number <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="tel"
-              placeholder="e.g., +1 234 567 8900"
-              value={form.phone_number}
-              onChange={(e) => handleChange('phone_number', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white placeholder-gray-500"
-              required
-            />
-          </div>
-        </div>
-
-        {/* Hospital-specific Fields */}
-        {role === 'hospital' && (
-          <div className="mt-6 border-t pt-6 border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">Hospital Details</h3>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <MapPin className="inline w-4 h-4 mr-1 text-gray-400" />
-                Hospital Address
-              </label>
-              <textarea
-                placeholder="Enter full hospital address"
-                value={form.address}
-                onChange={(e) => handleChange('address', e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white placeholder-gray-500"
+        );
+      case 'patients':
+        return (
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <FormInput
+                label="Age"
+                type="number"
+                placeholder="e.g., 45"
+                value={form.age}
+                onChange={(value) => handleChange('age', value)}
+                Icon={Calendar}
+              />
+              <FormSelect
+                label="Gender"
+                value={form.gender}
+                onChange={(value) => handleChange('gender', value)}
+                options={genderOptions}
+                Icon={User}
               />
             </div>
-          </div>
-        )}
-
-        {/* Nurse-specific Fields */}
-        {role === 'nurse' && (
-          <div className="mt-6 border-t pt-6 border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">Nurse Details</h3>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <Home className="inline w-4 h-4 mr-1 text-gray-400" />
-                Affiliated Hospital <span className="text-red-400">*</span>
-              </label>
-              <select
-                value={form.hospital_name_input}
-                onChange={(e) => handleChange('hospital_name_input', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white"
-                required
-              >
-                <option value="">Select Hospital</option>
-                {hospitals.map((hospital) => (
-                  <option key={hospital.id} value={hospital.name}>
-                    {hospital.name}
-                  </option>
-                ))}
-              </select>
+            <div className="grid md:grid-cols-2 gap-6">
+              <FormInput
+                label="Room Number"
+                type="text"
+                placeholder="e.g., A201"
+                value={form.room}
+                onChange={(value) => handleChange('room', value)}
+                Icon={Home}
+              />
+              <FormSelect
+                label="Diagnosis"
+                value={form.diagnosis}
+                onChange={(value) => handleChange('diagnosis', value)}
+                options={diagnosisOptions}
+                Icon={Activity}
+              />
             </div>
-          </div>
-        )}
+            <FormSelect
+              label="Hospital"
+              value={form.hospital_name_input}
+              onChange={(value) => handleChange('hospital_name_input', value)}
+              options={[{ value: '', label: 'Select Hospital' }, ...hospitals.map(h => ({ value: h.name, label: h.name }))]}
+              Icon={Hospital}
+              required
+            />
+            <FormSelect
+              label="Preferred Language"
+              value={form.preferred_lang}
+              onChange={(value) => handleChange('preferred_lang', value)}
+              options={languageOptions}
+              Icon={MapPin}
+            />
 
-        {/* Patient-specific Fields */}
-        {role === 'patients' && (
-          <div className="mt-6 border-t pt-6 border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">Patient Details</h3>
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    <Calendar className="inline w-4 h-4 mr-1 text-gray-400" />
-                    Age
-                  </label>
+            {/* Photo Upload */}
+            <div className="pt-6 border-t border-gray-200">
+              <h3 className="text-md font-semibold text-gray-800 mb-2 flex items-center">
+                <Camera className="w-5 h-5 mr-2 text-gray-500" />Profile Photo
+              </h3>
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
                   <input
-                    type="number"
-                    placeholder="e.g., 45"
-                    value={form.age}
-                    onChange={(e) => handleChange('age', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white placeholder-gray-500"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    <User className="inline w-4 h-4 mr-1 text-gray-400" />
-                    Gender
-                  </label>
-                  <select
-                    value={form.gender}
-                    onChange={(e) => handleChange('gender', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white"
-                  >
-                    {genderOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    <Home className="inline w-4 h-4 mr-1 text-gray-400" />
-                    Room Number
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g., A201"
-                    value={form.room}
-                    onChange={(e) => handleChange('room', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white placeholder-gray-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    <Activity className="inline w-4 h-4 mr-1 text-gray-400" />
-                    Diagnosis
-                  </label>
-                  <select
-                    value={form.diagnosis}
-                    onChange={(e) => handleChange('diagnosis', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white"
-                  >
-                    {diagnosisOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Hospital className="inline w-4 h-4 mr-1 text-gray-400" />
-                  Hospital <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={form.hospital_name_input}
-                  onChange={(e) => handleChange('hospital_name_input', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white"
-                  required
-                >
-                  <option value="">Select Hospital</option>
-                  {hospitals.map((hospital) => (
-                    <option key={hospital.id} value={hospital.name}>
-                      {hospital.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Preferred Language
-                </label>
-                <select
-                  value={form.preferred_lang}
-                  onChange={(e) => handleChange('preferred_lang', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white"
-                >
-                  {languageOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Photo Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Camera className="inline w-4 h-4 mr-1 text-gray-400" />
-                  Profile Photo
-                </label>
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="w-full text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-800 file:text-white hover:file:bg-blue-700 cursor-pointer"
-                    />
+                {imagePreview && (
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-600 shadow-md flex-shrink-0">
+                    <img src={imagePreview} alt="Profile Preview" className="w-full h-full object-cover" />
                   </div>
-                  {imagePreview && (
-                    <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-600 shadow-md flex-shrink-0">
-                      <img
-                        src={imagePreview}
-                        alt="Profile Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Upload a profile photo (max 5MB, JPG/PNG).
-                </p>
+                )}
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Upload a profile photo (max 5MB, JPG/PNG).
+              </p>
+            </div>
 
-              {/* Family Members Section */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white">
-                    <Users className="inline w-5 h-5 mr-2 text-gray-400" />
-                    Family Members / Emergency Contacts
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={addFamilyMember}
-                    className="flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Member
-                  </button>
-                </div>
-
-                {form.family.map((member: any, index: number) => (
-                  <div key={index} className="mb-4 p-5 border border-gray-700 rounded-xl bg-gray-700 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-md font-semibold text-white">
-                        Contact {index + 1}
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => removeFamilyMember(index)}
-                        className="flex items-center px-3 py-1 text-sm text-red-400 border border-red-600 rounded-lg hover:bg-red-900 transition-colors"
-                      >
-                        <Minus className="w-4 h-4 mr-1" />
-                        Remove
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <input
-                        type="text"
-                        placeholder="Full Name"
-                        value={member.name}
-                        onChange={(e) => updateFamilyMember(index, 'name', e.target.value)}
-                        className="px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-800 text-white placeholder-gray-500"
-                      />
-                      <select
-                        value={member.relationship}
-                        onChange={(e) => updateFamilyMember(index, 'relationship', e.target.value)}
-                        className="px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-800 text-white"
-                      >
-                        <option value="">Select Relationship</option>
-                        {relationshipOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <input
-                        type="tel"
-                        placeholder="Phone Number"
-                        value={member.phone_number}
-                        onChange={(e) => updateFamilyMember(index, 'phone_number', e.target.value)}
-                        className="px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-800 text-white placeholder-gray-500"
-                      />
-                      <input
-                        type="email"
-                        placeholder="Email Address"
-                        value={member.email}
-                        onChange={(e) => updateFamilyMember(index, 'email', e.target.value)}
-                        className="px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-800 text-white placeholder-gray-500"
-                      />
-                    </div>
-
-                    <div className="mb-4">
+            {/* Family Members Section */}
+            <div className="pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-md font-semibold text-gray-800 flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-gray-500" />Family/Emergency Contacts
+                </h3>
+                <button
+                  type="button"
+                  onClick={addFamilyMember}
+                  className="flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Add Member
+                </button>
+              </div>
+              <div className="space-y-4">
+                {form.family.length > 0 ? (
+                  form.family.map((member: any, index: number) => (
+                    <div key={index} className="p-5 border border-gray-200 rounded-xl bg-gray-50 shadow-sm">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-sm font-semibold text-gray-700">Contact {index + 1}</h4>
+                        <button
+                          type="button"
+                          onClick={() => removeFamilyMember(index)}
+                          className="flex items-center px-3 py-1 text-xs text-red-500 border border-red-500 rounded-lg hover:bg-red-100 transition-colors"
+                        >
+                          <Minus className="w-3 h-3 mr-1" /> Remove
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input
+                          type="text"
+                          placeholder="Full Name"
+                          value={member.name}
+                          onChange={(e) => updateFamilyMember(index, 'name', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 placeholder-gray-400"
+                        />
+                        <select
+                          value={member.relationship}
+                          onChange={(e) => updateFamilyMember(index, 'relationship', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-800"
+                        >
+                          {relationshipOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="tel"
+                          placeholder="Phone Number"
+                          value={member.phone_number}
+                          onChange={(e) => updateFamilyMember(index, 'phone_number', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 placeholder-gray-400"
+                        />
+                        <input
+                          type="email"
+                          placeholder="Email Address"
+                          value={member.email}
+                          onChange={(e) => updateFamilyMember(index, 'email', e.target.value)}
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 placeholder-gray-400"
+                        />
+                      </div>
                       <input
                         type="text"
                         placeholder="Address"
                         value={member.address}
                         onChange={(e) => updateFamilyMember(index, 'address', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-800 text-white placeholder-gray-500"
+                        className="w-full mt-4 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-800 placeholder-gray-400"
                       />
+                      <div className="flex items-center mt-3">
+                        <input
+                          type="checkbox"
+                          id={`emergency-${index}`}
+                          checked={member.is_emergency_contact}
+                          onChange={(e) => updateFamilyMember(index, 'is_emergency_contact', e.target.checked)}
+                          className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded bg-white"
+                        />
+                        <label htmlFor={`emergency-${index}`} className="text-sm text-gray-600 font-medium">
+                          Emergency Contact
+                        </label>
+                      </div>
                     </div>
-
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`emergency-${index}`}
-                        checked={member.is_emergency_contact}
-                        onChange={(e) => updateFamilyMember(index, 'is_emergency_contact', e.target.checked)}
-                        className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded-md bg-gray-800"
-                      />
-                      <label htmlFor={`emergency-${index}`} className="text-sm text-gray-300 font-medium">
-                        Emergency Contact
-                      </label>
-                    </div>
-                  </div>
-                ))}
-
-                {form.family.length === 0 && (
-                  <div className="text-center py-8 text-gray-500 bg-gray-700 rounded-xl border border-dashed border-gray-600">
-                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-600" />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500 bg-gray-100 rounded-xl border border-dashed border-gray-300">
+                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                     <p className="font-medium">No family members added yet.</p>
                     <p className="text-sm">Click "Add Member" to include emergency contacts.</p>
                   </div>
@@ -747,15 +584,96 @@ export default function RegisterPage() {
               </div>
             </div>
           </div>
-        )}
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <div className="max-w-3xl w-full p-8 bg-white rounded-3xl shadow-2xl">
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Create Your Account</h1>
+          <p className="text-gray-500 text-lg">Join our healthcare network today</p>
+        </div>
+
+        {/* Role Selection */}
+        <div className="mb-10">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Choose Your Role</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Object.entries(roleDetails).map(([key, details]) => (
+              <RoleCard
+                key={key}
+                role={key}
+                currentRole={role}
+                setRole={setRole}
+                Icon={details.icon}
+              />
+            ))}
+          </div>
+        </div>
+        
+        {/* Registration Form */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">General Information</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <FormInput
+              label="Full Name"
+              type="text"
+              placeholder="e.g., John Doe"
+              value={form.name}
+              onChange={(value) => handleChange('name', value)}
+              Icon={User}
+              required
+            />
+            <FormInput
+              label="Email Address"
+              type="email"
+              placeholder="e.g., email@example.com"
+              value={form.email}
+              onChange={(value) => handleChange('email', value)}
+              Icon={Mail}
+              required
+            />
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <FormInput
+              label="Password"
+              type="password"
+              placeholder="Create a strong password"
+              value={form.password}
+              onChange={(value) => handleChange('password', value)}
+              Icon={Lock}
+              required
+            />
+            <FormInput
+              label="Phone Number"
+              type="tel"
+              placeholder="e.g., +1 234 567 8900"
+              value={form.phone_number}
+              onChange={(value) => handleChange('phone_number', value)}
+              Icon={Phone}
+              required
+            />
+          </div>
+        </div>
+        
+        {/* Role-specific Fields */}
+        <div className="mt-8">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">{roleDetails[role].title} Details</h2>
+          <div className="p-8 bg-gray-50 rounded-2xl shadow-inner">
+            {renderFormFields()}
+          </div>
+        </div>
 
         {/* Submit Button */}
         <button
           onClick={handleRegister}
           disabled={isLoading}
-          className={`w-full mt-10 py-4 px-6 rounded-xl font-bold text-white text-lg tracking-wide transition-all duration-300 transform hover:scale-105 shadow-lg
+          className={`w-full mt-10 py-4 px-6 rounded-2xl font-bold text-white text-lg tracking-wide transition-all duration-300 transform hover:scale-[1.01] shadow-xl
             ${isLoading
-              ? 'bg-gray-600 cursor-not-allowed'
+              ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50'
             }`}
         >
@@ -771,11 +689,11 @@ export default function RegisterPage() {
 
         {/* Additional Options */}
         <div className="mt-8 text-center">
-          <p className="text-base text-gray-400">
+          <p className="text-base text-gray-600">
             Already have an account?{' '}
             <button
               onClick={() => router.push('/auth/login')}
-              className="text-blue-400 hover:text-blue-300 font-semibold hover:underline transition-colors"
+              className="text-blue-600 hover:text-blue-500 font-semibold hover:underline transition-colors"
             >
               Sign In
             </button>

@@ -82,12 +82,9 @@ const EmotionDetectorPage: React.FC = () => {
     // Callback to load Face-API.js models
     const loadModels = useCallback(async () => {
         try {
-            // await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_CDN_URL);
-            // await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_CDN_URL);
-            // await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_CDN_URL);
-            await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-            await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-            await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_CDN_URL);
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_CDN_URL);
+            await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_CDN_URL);
             setLoading(false);
         } catch (err) {
             console.error("Error loading AI models:", err);

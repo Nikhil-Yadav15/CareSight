@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LogIn, Eye, EyeOff } from 'lucide-react';
 import { createClient } from '@/lib/supabaseClient';
@@ -16,18 +16,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (key: string, value: string) => {
+  const handleChange = (key, value) => {
     setForm({ ...form, [key]: value });
   };
 
-  // Function to get dashboard route based on role
-  const getDashboardRoute = (role: string) => {
+  const getDashboardRoute = (role) => {
     switch (role) {
       case 'hospital':
         return '/dashboard/hospital';
       case 'nurse':
         return '/dashboard/nurse';
-      case 'patients': // Changed from 'patients' for consistency with PatientDashboard
+      case 'patients':
         return '/dashboard/patient';
       default:
         return '/dashboard';
@@ -35,14 +34,12 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
-    // Basic validation
     if (!form.email || !form.password) {
       alert('Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
-    // Use 'patient' instead of 'patients' for consistency
     const roles = ['hospital', 'nurse', 'patients'];
 
     try {
@@ -55,14 +52,12 @@ export default function LoginPage() {
           .maybeSingle();
 
         if (data && !error) {
-          // Store user data in localStorage
           localStorage.setItem('user_id', data.id);
           localStorage.setItem('role', role);
           localStorage.setItem('user_name', data.name);
 
           alert('✅ Login Successful!');
 
-          // Redirect to role-specific dashboard
           const dashboardRoute = getDashboardRoute(role);
           router.push(dashboardRoute);
           return;
@@ -78,79 +73,61 @@ export default function LoginPage() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleLogin();
     }
   };
 
+  const handleSignUpRedirect = () => {
+    router.push('/auth/register');
+  };
+
   return (
-    // Outer container for the full screen, with dark background and subtle gradient/noise
-    <div className="min-h-screen flex items-center justify-center p-4 relative bg-gray-950 text-gray-200 overflow-hidden">
-      {/* Subtle background texture/glow elements - Similar to RegisterPage */}
-      <div className="absolute inset-0 z-0 opacity-20">
-        {/* Silver glow effect 1 */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-gray-700 to-gray-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob"></div>
-        {/* Silver glow effect 2 */}
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-tl from-gray-700 to-gray-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        {/* Silver glow effect 3 */}
-        <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-gradient-to-tr from-gray-700 to-gray-500 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-      </div>
-
-      {/* Tailwind CSS keyframes for background animation */}
-      <style jsx>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
-
-      {/* Main form container with glass effect on dark background - Similar to RegisterPage */}
-      <div className="relative z-10 max-w-md w-full mx-4 p-8 bg-black bg-opacity-40 backdrop-filter backdrop-blur-lg rounded-2xl shadow-xl border border-gray-700 border-opacity-50">
+    <div className="min-h-screen flex items-center justify-center p-4 relative bg-white overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50"></div>
+      <div className="absolute top-20 left-10 w-32 h-32 bg-blue-100 rounded-full opacity-20 animate-pulse"></div>
+      <div className="absolute top-40 right-20 w-24 h-24 bg-purple-100 rounded-full opacity-30 animate-bounce" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute bottom-40 left-20 w-20 h-20 bg-green-100 rounded-full opacity-25 animate-pulse" style={{ animationDelay: '2s' }}></div>
+      
+      {/* Main form container with glass effect */}
+      <div className="relative z-10 max-w-md w-full mx-4 p-8 bg-white/80 backdrop-filter backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200">
         <div className="text-center mb-8">
-          {/* Login Icon Circle - Styled for dark theme */}
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-700 to-indigo-700 rounded-full mb-4 shadow-lg">
-            <LogIn className="w-10 h-10 text-white" />
+          {/* Logo & Title */}
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-xl">C</span>
+            </div>
+            <span className="text-3xl font-bold text-gray-900">
+              Care Sight
+            </span>
           </div>
-          <h1 className="text-4xl font-extrabold text-gray-50 mb-2 drop-shadow-sm">Welcome Back</h1>
-          <p className="text-gray-400 text-lg">Sign in to your secure healthcare portal</p>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">Welcome Back</h1>
+          <p className="text-gray-600 text-lg">Sign in to your secure portal</p>
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-6">
-          {/* Email Field - Styled for dark theme */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center">
-              <Mail className="w-5 h-5 mr-2 text-blue-400" />
-              Email Address
-            </label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={form.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="w-full px-4 py-3 border border-gray-700 rounded-lg bg-gray-800 text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 hover:border-gray-600"
-              required
-            />
+          {/* Email Field */}
+          <div className="group/input">
+            <label className="block text-gray-700 font-medium mb-2 group-hover/input:text-blue-600 transition-colors duration-200">Email Address</label>
+            <div className="relative">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={form.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="w-full px-4 py-3 pl-12 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-200 hover:border-blue-400 hover:shadow-md"
+                required
+              />
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 group-hover/input:text-blue-600 transition-colors" size={20} />
+            </div>
           </div>
 
-          {/* Password Field - Styled for dark theme */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center">
-              <Lock className="w-5 h-5 mr-2 text-blue-400" />
-              Password
-            </label>
+          {/* Password Field */}
+          <div className="group/input">
+            <label className="block text-gray-700 font-medium mb-2 group-hover/input:text-blue-600 transition-colors duration-200">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -158,62 +135,52 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={(e) => handleChange('password', e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full px-4 py-3 pr-12 border border-gray-700 rounded-lg bg-gray-800 text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-3 pl-12 pr-12 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-200 hover:border-blue-400 hover:shadow-md"
                 required
               />
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 group-hover/input:text-blue-600 transition-colors" size={20} />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 focus:outline-none transition-colors"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-600 focus:outline-none transition-colors"
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>
 
-          {/* Login Button - Styled for dark theme */}
+          {/* Login Button */}
           <button
             type="submit"
-            onClick={handleLogin}
+            className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.01] transform active:scale-[0.99] disabled:bg-gray-400 disabled:cursor-not-allowed"
             disabled={isLoading}
-            className={`w-full py-4 px-6 rounded-xl font-bold text-white text-lg shadow-lg transition-all duration-300 transform ${
-              isLoading
-                ? 'bg-gray-700 cursor-not-allowed' // Darker gray for loading state
-                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50'
-            }`}
           >
             {isLoading ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div> {/* Larger spinner */}
-                Signing In...
-              </div>
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Logging In...
+              </span>
             ) : (
-              <>
-                <LogIn className="inline w-5 h-5 mr-2" />
-                Sign In
-              </>
+              'Sign In'
             )}
           </button>
         </form>
 
-        {/* Additional Options - Styled for dark theme */}
-        <div className="mt-8 text-center">
-          <p className="text-md text-gray-400">
-            Don't have an account?{' '}
+        {/* Redirect to Sign Up */}
+        <div className="mt-6 text-center text-gray-600">
+          <p>Don't have an account?{' '}
             <button
-              onClick={() => router.push('/auth/register')}
-              className="text-blue-500 hover:text-blue-400 font-bold hover:underline ml-1 transition-colors"
+              type="button"
+              onClick={handleSignUpRedirect}
+              className="font-semibold text-blue-600 hover:underline transition-colors"
             >
-              Create Account
+              Sign up
             </button>
           </p>
         </div>
-
-        {/* Removed Role Information section as per request */}
       </div>
     </div>
   );

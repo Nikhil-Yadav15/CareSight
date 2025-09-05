@@ -19,7 +19,7 @@ import {
   Stethoscope,
   MapPin,
   Flag,
-  Pill, // <--- New: Import Pill icon for medications
+  Pill,
 } from 'lucide-react';
 
 // --- Type Definitions (Highly Recommended for clarity and type safety) ---
@@ -35,7 +35,7 @@ interface Patient {
   preferred_lang: string;
   hospital_id: string;
   assigned_nurse_ids: string[];
-  family: any[]; // Consider defining a proper type for family members as well
+  family: any[];
 }
 
 interface Hospital {
@@ -65,7 +65,7 @@ interface Medication {
   id: string;
   patient_id: string;
   name: string;
-  dosage: MedicationDosage; // Use the specific Dosage type
+  dosage: MedicationDosage;
   createdat: string;
   updatedat: string;
 }
@@ -77,7 +77,7 @@ const PatientDashboard: React.FC = () => {
   const [hospitalData, setHospitalData] = useState<Hospital | null>(null);
   const [nurseData, setNurseData] = useState<Nurse | null>(null);
   const [familyMembers, setFamilyMembers] = useState<any[]>([]);
-  const [medications, setMedications] = useState<Medication[]>([]); // New state for medications
+  const [medications, setMedications] = useState<Medication[]>([]);
   const [editing, setEditing] = useState(false);
   const [phone, setPhone] = useState('');
   const [age, setAge] = useState('');
@@ -143,20 +143,17 @@ const PatientDashboard: React.FC = () => {
         // Set family members from patient data directly
         setFamilyMembers(patient.family || []);
 
-        // --- NEW: Fetch Medications for this patient ---
+        // Fetch Medications for this patient
         const { data: meds, error: medError } = await supabase
           .from('medication')
           .select('*')
-          .eq('patient_id', patient.id); // Fetch medications specific to this patient ID
+          .eq('patient_id', patient.id);
 
         if (medError) {
           console.error('Error fetching medications:', medError);
-          // Don't throw a critical error if meds don't load, just log it
         } else {
           setMedications(meds || []);
         }
-        // --- End NEW ---
-
       } catch (err: any) {
         console.error('Error in fetchData:', err.message);
         setError(err.message);
@@ -290,10 +287,12 @@ const PatientDashboard: React.FC = () => {
     );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 px-6 py-10">
+    <div className="min-h-screen bg-white text-gray-800 px-6 py-10">
       <div className="max-w-4xl mx-auto space-y-8">
+        
+        {/* --- Header & Action Buttons --- */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-extrabold text-white drop-shadow-lg">Patient Dashboard</h1>
+          <h1 className="text-4xl font-extrabold text-gray-900 drop-shadow-lg">Patient Dashboard</h1>
           <div className="flex space-x-4">
             <button
               onClick={handleCaresightRedirect}
@@ -311,74 +310,17 @@ const PatientDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Hospital Info Card */}
-        {hospitalData && (
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-            <h2 className="text-2xl font-bold mb-4 text-blue-400 flex items-center">
-              <Building2 className="h-6 w-6 mr-3 text-blue-500" />
-              {hospitalData.name}
+        {/* --- Patient Overview Card --- */}
+        {patientData ? (
+          <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
+            <h2 className="text-2xl font-bold mb-4 text-orange-600 flex items-center">
+              <User className="h-6 w-6 mr-3 text-orange-600" />
+              My Information
             </h2>
-            <div className="space-y-2 text-gray-300">
-              <p className="flex items-center">
-                <MapPin className="h-5 w-5 mr-3 text-gray-500" />
-                {hospitalData.address}
-              </p>
-              <p className="flex items-center">
-                <Mail className="h-5 w-5 mr-3 text-gray-500" />
-                {hospitalData.email}
-              </p>
-              <p className="flex items-center">
-                <Phone className="h-5 w-5 mr-3 text-gray-500" />
-                {hospitalData.phone_number}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Assigned Nurse Info Card */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 text-green-400 flex items-center">
-            <Stethoscope className="h-6 w-6 mr-3 text-green-500" />
-            Assigned Nurse
-          </h2>
-          {nurseData ? (
-            <div className="space-y-2 text-gray-300">
-              <p className="flex items-center">
-                <User className="h-5 w-5 mr-3 text-gray-500" />
-                {nurseData.name}
-              </p>
-              <p className="flex items-center">
-                <Mail className="h-5 w-5 mr-3 text-gray-500" />
-                {nurseData.email}
-              </p>
-              <p className="flex items-center">
-                <Phone className="h-5 w-5 mr-3 text-gray-500" />
-                {nurseData.phone_number}
-              </p>
-            </div>
-          ) : (
-            <p className="text-red-400 flex items-center">
-              <AlertCircle className="h-5 w-5 mr-2" />
-              No nurse currently assigned.
-            </p>
-          )}
-        </div>
-
-        {/* Patient Personal Info Card */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 text-orange-400 flex items-center">
-            <User className="h-6 w-6 mr-3 text-orange-500" />
-            Your Personal Information
-          </h2>
-          {patientData && (
-            <div className="space-y-3 text-gray-300">
+            <div className="space-y-3 text-gray-700">
               <p className="flex items-center">
                 <User className="h-5 w-5 mr-3 text-gray-500" />
                 Name: {patientData.name}
-              </p>
-              <p className="flex items-center">
-                <Mail className="h-5 w-5 mr-3 text-gray-500" />
-                Email: {patientData.email}
               </p>
               <p className="flex items-center">
                 <Home className="h-5 w-5 mr-3 text-gray-500" />
@@ -399,7 +341,7 @@ const PatientDashboard: React.FC = () => {
                     <Calendar className="h-5 w-5 mr-3 text-gray-500" />
                     <input
                       type="number"
-                      className="flex-1 bg-gray-700 text-gray-100 border border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1 bg-white text-gray-800 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
                       placeholder="Age"
@@ -409,7 +351,7 @@ const PatientDashboard: React.FC = () => {
                     <Phone className="h-5 w-5 mr-3 text-gray-500" />
                     <input
                       type="tel"
-                      className="flex-1 bg-gray-700 text-gray-100 border border-gray-600 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1 bg-white text-gray-800 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="Phone Number"
@@ -451,23 +393,79 @@ const PatientDashboard: React.FC = () => {
                 </>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
+            <p className="text-gray-500">No patient data available.</p>
+          </div>
+        )}
 
-        ---
+        <hr className="my-8 border-gray-300" />
 
-        {/* Medications Card (NEW SECTION) */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 text-pink-400 flex items-center">
-            <Pill className="h-6 w-6 mr-3 text-pink-500" />
-            Your Medications
+        {/* --- Assigned Nurse Card (NEW) --- */}
+        {nurseData && (
+          <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
+            <h2 className="text-2xl font-bold mb-4 text-emerald-600 flex items-center">
+              <Stethoscope className="h-6 w-6 mr-3 text-emerald-600" />
+              My Nurse
+            </h2>
+            <div className="space-y-2 text-gray-700">
+              <p className="flex items-center">
+                <User className="h-5 w-5 mr-3 text-gray-500" />
+                Name: {nurseData.name}
+              </p>
+              <p className="flex items-center">
+                <Mail className="h-5 w-5 mr-3 text-gray-500" />
+                Email: {nurseData.email}
+              </p>
+              <p className="flex items-center">
+                <Phone className="h-5 w-5 mr-3 text-gray-500" />
+                Phone: {nurseData.phone_number}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <hr className="my-8 border-gray-300" />
+
+        {/* --- Hospital Info Card (retained) --- */}
+        {hospitalData && (
+          <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
+            <h2 className="text-2xl font-bold mb-4 text-blue-600 flex items-center">
+              <Building2 className="h-6 w-6 mr-3 text-blue-600" />
+              Hospital Information
+            </h2>
+            <div className="space-y-2 text-gray-700">
+              <p className="flex items-center">
+                <MapPin className="h-5 w-5 mr-3 text-gray-500" />
+                {hospitalData.name} - {hospitalData.address}
+              </p>
+              <p className="flex items-center">
+                <Mail className="h-5 w-5 mr-3 text-gray-500" />
+                {hospitalData.email}
+              </p>
+              <p className="flex items-center">
+                <Phone className="h-5 w-5 mr-3 text-gray-500" />
+                {hospitalData.phone_number}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <hr className="my-8 border-gray-300" />
+
+        {/* --- Medications Card (Prominent for Patient) --- */}
+        <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
+          <h2 className="text-2xl font-bold mb-4 text-pink-600 flex items-center">
+            <Pill className="h-6 w-6 mr-3 text-pink-600" />
+            My Medication Schedule
           </h2>
           {medications.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {medications.map((med) => (
-                <div key={med.id} className="bg-gray-700 p-5 rounded-lg shadow-md border border-gray-600">
-                  <h3 className="text-xl font-semibold text-white mb-2">{med.name}</h3>
-                  <div className="text-sm text-gray-300 space-y-1">
+                <div key={med.id} className="bg-white p-5 rounded-lg shadow-md border border-gray-300">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{med.name}</h3>
+                  <div className="text-sm text-gray-600 space-y-1">
                     <p><strong>Dosage:</strong> {med.dosage?.amount || 'N/A'}</p>
                     {med.dosage?.frequency && <p><strong>Frequency:</strong> {med.dosage.frequency}</p>}
                     {med.dosage?.timing && <p><strong>Timing:</strong> {med.dosage.timing}</p>}
@@ -480,16 +478,16 @@ const PatientDashboard: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-400">No medications currently assigned.</p>
+            <p className="text-gray-500">No medications currently assigned.</p>
           )}
         </div>
 
-        ---
+        <hr className="my-8 border-gray-300" />
 
-        {/* Family Members Card */}
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 text-purple-400 flex items-center">
-            <Users className="h-6 w-6 mr-3 text-purple-500" />
+        {/* --- Family Members Card --- */}
+        <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
+          <h2 className="text-2xl font-bold mb-4 text-purple-600 flex items-center">
+            <Users className="h-6 w-6 mr-3 text-purple-600" />
             Family Members
           </h2>
 
@@ -498,9 +496,9 @@ const PatientDashboard: React.FC = () => {
               {familyMembers.map((member, index) => (
                 <div
                   key={index}
-                  className="bg-gray-700 p-5 rounded-lg shadow-md flex flex-col justify-between items-start border border-gray-600"
+                  className="bg-white p-5 rounded-lg shadow-md flex flex-col justify-between items-start border border-gray-300"
                 >
-                  <div className="text-sm text-gray-200 space-y-1 w-full">
+                  <div className="text-sm text-gray-700 space-y-1 w-full">
                     <p>
                       <strong>Name:</strong> {member.name}
                     </p>
@@ -515,7 +513,7 @@ const PatientDashboard: React.FC = () => {
                     </p>
                     <p>
                       <strong>Emergency Contact:</strong>{' '}
-                      <span className={member.is_emergency_contact ? 'text-green-400' : 'text-red-400'}>
+                      <span className={member.is_emergency_contact ? 'text-green-600' : 'text-red-600'}>
                         {member.is_emergency_contact ? 'Yes' : 'No'}
                       </span>
                     </p>
@@ -530,48 +528,48 @@ const PatientDashboard: React.FC = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 mb-4">No family members added yet.</p>
+            <p className="text-gray-500 mb-4">No family members added yet.</p>
           )}
 
-          <div className="mt-6 p-5 bg-gray-700 rounded-lg border border-gray-600 shadow-md">
-            <h3 className="text-lg font-semibold mb-3 text-gray-200">Add New Family Member</h3>
+          <div className="mt-6 p-5 bg-white rounded-lg border border-gray-300 shadow-md">
+            <h3 className="text-lg font-semibold mb-3 text-gray-900">Add New Family Member</h3>
             <div className="space-y-3">
               <input
                 type="text"
                 value={newFamilyMember.name}
                 onChange={(e) => setNewFamilyMember({ ...newFamilyMember, name: e.target.value })}
                 placeholder="Name"
-                className="w-full bg-gray-600 text-gray-100 border border-gray-500 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full bg-gray-100 text-gray-800 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <input
                 type="email"
                 value={newFamilyMember.email}
                 onChange={(e) => setNewFamilyMember({ ...newFamilyMember, email: e.target.value })}
                 placeholder="Email"
-                className="w-full bg-gray-600 text-gray-100 border border-gray-500 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full bg-gray-100 text-gray-800 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <input
                 type="tel"
                 value={newFamilyMember.phone_number}
                 onChange={(e) => setNewFamilyMember({ ...newFamilyMember, phone_number: e.target.value })}
                 placeholder="Phone Number"
-                className="w-full bg-gray-600 text-gray-100 border border-gray-500 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full bg-gray-100 text-gray-800 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <input
                 type="text"
                 value={newFamilyMember.relationship}
                 onChange={(e) => setNewFamilyMember({ ...newFamilyMember, relationship: e.target.value })}
                 placeholder="Relationship (e.g., Spouse, Parent)"
-                className="w-full bg-gray-600 text-gray-100 border border-gray-500 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full bg-gray-100 text-gray-800 border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
               />
-              <label className="inline-flex items-center text-gray-200 cursor-pointer">
+              <label className="inline-flex items-center text-gray-700 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={newFamilyMember.is_emergency_contact}
                   onChange={(e) =>
                     setNewFamilyMember({ ...newFamilyMember, is_emergency_contact: e.target.checked })
                   }
-                  className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500 bg-gray-500 border-gray-400"
+                  className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500 bg-gray-200 border-gray-400"
                 />
                 Emergency Contact
               </label>

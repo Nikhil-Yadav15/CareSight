@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Users, User, Phone, Mail, MapPin, Calendar, AlertCircle, Plus, X, Search, Filter, Save, Building2, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabaseClient';
 
+const supabase = createClient();
+
 const Dashboard = () => {
   const [patients, setPatients] = useState([]);
   const [nurses, setNurses] = useState([]);
@@ -40,7 +42,7 @@ const Dashboard = () => {
   // Fetch hospital info from Supabase
   const fetchHospitalInfo = async (id) => {
     try {
-      const { data, error } = await createClient()
+      const { data, error } = await supabase
         .from('hospital')
         .select('*')
         .eq('id', id)
@@ -48,7 +50,7 @@ const Dashboard = () => {
 
       if (error) throw error;
       setHospitalInfo(data);
-      return data; // Return the hospital data to use in other functions
+      return data;
     } catch (err) {
       setError(`Error fetching hospital info: ${err.message}`);
       console.error('Error fetching hospital info:', err);
@@ -64,7 +66,7 @@ const Dashboard = () => {
     }
 
     try {
-      const { data, error } = await createClient()
+      const { data, error } = await supabase
         .from('patients')
         .select('*')
         .in('id', patientIds);
@@ -85,7 +87,7 @@ const Dashboard = () => {
     }
 
     try {
-      const { data, error } = await createClient()
+      const { data, error } = await supabase
         .from('nurse')
         .select('*')
         .in('id', nurseIds);
@@ -104,10 +106,7 @@ const Dashboard = () => {
       const fetchData = async () => {
         setLoading(true);
         try {
-          // First fetch hospital info
           const hospitalData = await fetchHospitalInfo(hospitalId);
-
-          // Then fetch patients and nurses using the IDs from hospital data
           await Promise.all([
             fetchPatients(hospitalData.patient_ids || []),
             fetchNurses(hospitalData.nurse_ids || [])
@@ -132,38 +131,32 @@ const Dashboard = () => {
         throw new Error('Patient or nurse not found');
       }
 
-      // Check if patient is already assigned to this nurse
       if (patient.assigned_nurse_ids && patient.assigned_nurse_ids.includes(nurseId)) {
-        setSuccessMessage(null); // Clear any existing success message
+        setSuccessMessage(null);
         setError('This patient is already assigned to this nurse.');
-        setTimeout(() => setError(null), 3000); // Clear error after 3 seconds
+        setTimeout(() => setError(null), 3000);
         setShowAssignModal(false);
         setSelectedPatient(null);
         setSelectedNurse(null);
         return;
       }
 
-      // Update patient's assigned_nurse_ids
       const updatedPatientNurseIds = [...(patient.assigned_nurse_ids || []), nurseId];
-
-      const { error: patientError } = await createClient()
+      const { error: patientError } = await supabase
         .from('patients')
         .update({ assigned_nurse_ids: updatedPatientNurseIds })
         .eq('id', patientId);
 
       if (patientError) throw patientError;
 
-      // Update nurse's patient_ids
       const updatedNursePatientIds = [...(nurse.patient_ids || []), patientId];
-
-      const { error: nurseError } = await createClient()
+      const { error: nurseError } = await supabase
         .from('nurse')
         .update({ patient_ids: updatedNursePatientIds })
         .eq('id', nurseId);
 
       if (nurseError) throw nurseError;
 
-      // Refresh data
       const hospitalData = await fetchHospitalInfo(hospitalId);
       await Promise.all([
         fetchPatients(hospitalData.patient_ids || []),
@@ -174,12 +167,11 @@ const Dashboard = () => {
       setSelectedPatient(null);
       setSelectedNurse(null);
 
-      // Success message
-      setError(null); // Clear any existing error message
+      setError(null);
       setSuccessMessage('Patient successfully assigned to nurse!');
-      setTimeout(() => setSuccessMessage(null), 3000); // Clear message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setSuccessMessage(null); // Clear any existing success message
+      setSuccessMessage(null);
       setError(`Error assigning patient: ${err.message}`);
       console.error('Error assigning patient:', err);
     }
@@ -195,39 +187,33 @@ const Dashboard = () => {
         throw new Error('Patient or nurse not found');
       }
 
-      // Update patient's assigned_nurse_ids
       const updatedPatientNurseIds = (patient.assigned_nurse_ids || []).filter(id => id !== nurseId);
-
-      const { error: patientError } = await createClient()
+      const { error: patientError } = await supabase
         .from('patients')
         .update({ assigned_nurse_ids: updatedPatientNurseIds })
         .eq('id', patientId);
 
       if (patientError) throw patientError;
 
-      // Update nurse's patient_ids
       const updatedNursePatientIds = (nurse.patient_ids || []).filter(id => id !== patientId);
-
-      const { error: nurseError } = await createClient()
+      const { error: nurseError } = await supabase
         .from('nurse')
         .update({ patient_ids: updatedNursePatientIds })
         .eq('id', nurseId);
 
       if (nurseError) throw nurseError;
 
-      // Refresh data
       const hospitalData = await fetchHospitalInfo(hospitalId);
       await Promise.all([
         fetchPatients(hospitalData.patient_ids || []),
         fetchNurses(hospitalData.nurse_ids || [])
       ]);
 
-      // Success message
-      setError(null); // Clear any existing error message
+      setError(null);
       setSuccessMessage('Patient successfully unassigned from nurse!');
-      setTimeout(() => setSuccessMessage(null), 3000); // Clear message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setSuccessMessage(null); // Clear any existing success message
+      setSuccessMessage(null);
       setError(`Error removing assignment: ${err.message}`);
       console.error('Error removing assignment:', err);
     }
@@ -261,15 +247,15 @@ const Dashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('user_id');
     localStorage.removeItem('role');
-    window.location.href = '/'; // Redirect to login or homepage
+    window.location.href = '/';
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-400 mx-auto"></div>
-          <p className="mt-4 text-gray-300">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -277,11 +263,11 @@ const Dashboard = () => {
 
   if (error && !loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <div className="bg-gray-800 rounded-xl shadow-md p-8 text-center max-w-sm w-full border border-gray-700">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-md p-8 text-center max-w-sm w-full border border-gray-200">
           <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-red-400 mb-2">Error</h1>
-          <p className="text-red-300">{error}</p>
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Error</h1>
+          <p className="text-red-500">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="mt-6 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
@@ -294,26 +280,26 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 font-sans text-gray-100">
+    <div className="min-h-screen bg-gray-100 font-sans text-gray-900">
       {/* Header */}
-      <header className="bg-gray-800 shadow-lg border-b border-gray-700">
+      <header className="bg-white shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center">
           <div>
-            <h1 className="text-3xl font-extrabold text-white">Hospital Dashboard</h1>
-            <p className="mt-1 text-base text-gray-400">Manage patient assignments and nurse workloads efficiently.</p>
+            <h1 className="text-3xl font-extrabold text-gray-900">Hospital Dashboard</h1>
+            <p className="mt-1 text-base text-gray-500">Manage patient assignments and nurse workloads efficiently.</p>
           </div>
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            <div className="bg-blue-900 px-4 py-2 rounded-full flex items-center shadow-md border border-blue-700">
-              <Users className="h-5 w-5 text-blue-400 mr-2" />
-              <span className="text-sm font-semibold text-blue-200">Patients: {patients.length}</span>
+            <div className="bg-blue-50 px-4 py-2 rounded-full flex items-center shadow-sm border border-blue-200">
+              <Users className="h-5 w-5 text-blue-600 mr-2" />
+              <span className="text-sm font-semibold text-blue-800">Patients: {patients.length}</span>
             </div>
-            <div className="bg-green-900 px-4 py-2 rounded-full flex items-center shadow-md border border-green-700">
-              <User className="h-5 w-5 text-green-400 mr-2" />
-              <span className="text-sm font-semibold text-green-200">Nurses: {nurses.length}</span>
+            <div className="bg-green-50 px-4 py-2 rounded-full flex items-center shadow-sm border border-green-200">
+              <User className="h-5 w-5 text-green-600 mr-2" />
+              <span className="text-sm font-semibold text-green-800">Nurses: {nurses.length}</span>
             </div>
             <button
               onClick={handleLogout}
-              className="bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition-colors duration-200 flex items-center shadow-md"
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center shadow-md"
             >
               <LogOut className="h-5 w-5 mr-2" />
               Logout
@@ -321,34 +307,35 @@ const Dashboard = () => {
           </div>
         </div>
       </header>
-
+      
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Success/Error Notification */}
         {successMessage && (
-          <div className="bg-green-900 border border-green-700 text-green-200 px-4 py-3 rounded-lg relative mb-6" role="alert">
+          <div className="bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
             <span className="block sm:inline">{successMessage}</span>
             <span className="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer" onClick={() => setSuccessMessage(null)}>
-              <X className="h-5 w-5 text-green-200" />
+              <X className="h-5 w-5 text-green-600" />
             </span>
           </div>
         )}
         {error && !loading && (
-          <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg relative mb-6" role="alert">
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
             <span className="block sm:inline">{error}</span>
             <span className="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer" onClick={() => setError(null)}>
-              <X className="h-5 w-5 text-red-200" />
+              <X className="h-5 w-5 text-red-600" />
             </span>
           </div>
         )}
 
         {/* Hospital Info Card */}
         {hospitalInfo && (
-          <div className="bg-gray-800 rounded-xl shadow-lg mb-8 p-6 border border-gray-700">
+          <div className="bg-white rounded-xl shadow-md mb-8 p-6 border border-gray-200">
             <div className="flex items-center mb-4">
-              <Building2 className="h-8 w-8 text-indigo-400 mr-4 flex-shrink-0" />
-              <h2 className="text-2xl font-bold text-white">{hospitalInfo.name}</h2>
+              <Building2 className="h-8 w-8 text-indigo-600 mr-4 flex-shrink-0" />
+              <h2 className="text-2xl font-bold text-gray-900">{hospitalInfo.name}</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-y-3 gap-x-6 text-base text-gray-300">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-y-3 gap-x-6 text-base text-gray-600">
               <div className="flex items-center">
                 <MapPin className="h-5 w-5 mr-2 text-gray-400" />
                 <span>{hospitalInfo.address}</span>
@@ -368,10 +355,10 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Patients Section */}
           <section className="lg:col-span-2">
-            <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-              <div className="p-6 border-b border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h2 className="text-2xl font-bold text-white flex items-center">
-                  <Users className="h-6 w-6 mr-3 text-blue-400" />
+            <div className="bg-white rounded-xl shadow-md border border-gray-200">
+              <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                  <Users className="h-6 w-6 mr-3 text-blue-600" />
                   Patients
                 </h2>
                 <button
@@ -384,23 +371,23 @@ const Dashboard = () => {
               </div>
 
               {/* Search and Filter */}
-              <div className="p-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 border-b border-gray-700">
+              <div className="p-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 border-b border-gray-200">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search patients by name, email, or room..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-900 placeholder-gray-500"
                   />
                 </div>
                 <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <select
                     value={filterBy}
                     onChange={(e) => setFilterBy(e.target.value)}
-                    className="appearance-none w-full sm:w-auto pl-10 pr-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
+                    className="appearance-none w-full sm:w-auto pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-900"
                   >
                     <option value="all">All Patients</option>
                     <option value="assigned">Assigned</option>
@@ -409,18 +396,18 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="divide-y divide-gray-700">
+              <div className="divide-y divide-gray-200">
                 {filteredPatients.length > 0 ? (
                   filteredPatients.map((patient) => (
-                    <div key={patient.id} className="p-6 transition-all duration-200 hover:bg-gray-700">
+                    <div key={patient.id} className="p-6 transition-all duration-200 hover:bg-gray-50">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
                         <div className="flex items-center space-x-4 mb-3 sm:mb-0">
-                          <div className="h-14 w-14 rounded-full bg-blue-900 flex items-center justify-center border border-blue-700 flex-shrink-0">
-                            <User className="h-7 w-7 text-blue-400" />
+                          <div className="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center border border-blue-300 flex-shrink-0">
+                            <User className="h-7 w-7 text-blue-600" />
                           </div>
                           <div>
-                            <h3 className="text-xl font-semibold text-white">{patient.name}</h3>
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-300 mt-1">
+                            <h3 className="text-xl font-semibold text-gray-900">{patient.name}</h3>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
                               <span className="flex items-center">
                                 <Mail className="h-4 w-4 mr-1.5 text-gray-400" />
                                 {patient.email}
@@ -436,30 +423,30 @@ const Dashboard = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="text-left sm:text-right text-gray-200">
+                        <div className="text-left sm:text-right text-gray-800">
                           <div className="text-base font-medium">
                             {patient.age} years old • {patient.gender}
                           </div>
-                          <div className="text-md text-gray-100 font-semibold mt-1">
+                          <div className="text-md text-gray-900 font-semibold mt-1">
                             Diagnosis: {patient.diagnosis}
                           </div>
                         </div>
                       </div>
 
                       {/* Assigned Nurses */}
-                      <div className="mt-4 border-t border-gray-700 pt-4">
-                        <p className="text-sm font-medium text-gray-300 mb-2">Assigned Nurses:</p>
+                      <div className="mt-4 border-t border-gray-200 pt-4">
+                        <p className="text-sm font-medium text-gray-600 mb-2">Assigned Nurses:</p>
                         {patient.assigned_nurse_ids && patient.assigned_nurse_ids.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {patient.assigned_nurse_ids.map((nurseId) => (
                               <span
                                 key={nurseId}
-                                className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-green-900 text-green-200 border border-green-700 shadow-sm"
+                                className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-300 shadow-sm"
                               >
                                 {getNurseNameById(nurseId)}
                                 <button
                                   onClick={() => removePatientFromNurse(patient.id, nurseId)}
-                                  className="ml-2 text-green-400 hover:text-green-200 transition-colors duration-200"
+                                  className="ml-2 text-green-600 hover:text-green-800 transition-colors duration-200"
                                   title="Unassign nurse"
                                 >
                                   <X className="h-4 w-4" />
@@ -468,7 +455,7 @@ const Dashboard = () => {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-sm text-red-400 flex items-center bg-red-900 p-2 rounded-md border border-red-700">
+                          <span className="text-sm text-red-600 flex items-center bg-red-100 p-2 rounded-md border border-red-300">
                             <AlertCircle className="h-4 w-4 mr-2" />
                             No nurse assigned yet.
                           </span>
@@ -476,16 +463,23 @@ const Dashboard = () => {
                       </div>
 
                       {/* Family Contact */}
-                      {patient.family && (
-                        <div className="mt-3 text-sm text-gray-400">
-                          <span className="font-medium">Emergency Contact:</span> {patient.family.emergency_contact} ({patient.family.relationship})
+                      {patient.family && patient.family.length > 0 && (
+                        <div className="mt-3 text-sm text-gray-500 pt-3 border-t border-gray-200">
+                          <p className="font-medium text-gray-600 mb-1">Emergency Contacts:</p>
+                          <ul className="list-disc list-inside space-y-1">
+                            {patient.family.filter(f => f.is_emergency_contact).map((contact, index) => (
+                              <li key={index} className="text-gray-600">
+                                <span className="font-semibold">{contact.name}</span> ({contact.relationship}) - {contact.phone_number}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                     </div>
                   ))
                 ) : (
                   <div className="p-6 text-center text-gray-500 py-10">
-                    <Search className="h-10 w-10 mx-auto text-gray-600 mb-4" />
+                    <Search className="h-10 w-10 mx-auto text-gray-400 mb-4" />
                     <p className="text-lg">No patients found matching your criteria.</p>
                   </div>
                 )}
@@ -495,25 +489,25 @@ const Dashboard = () => {
 
           {/* Nurses Section */}
           <section className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-              <div className="p-6 border-b border-gray-700">
-                <h2 className="text-2xl font-bold text-white flex items-center">
-                  <User className="h-6 w-6 mr-3 text-green-400" />
+            <div className="bg-white rounded-xl shadow-md border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                  <User className="h-6 w-6 mr-3 text-green-600" />
                   Nurses
                 </h2>
               </div>
 
-              <div className="divide-y divide-gray-700">
+              <div className="divide-y divide-gray-200">
                 {nurses.length > 0 ? (
                   nurses.map((nurse) => (
-                    <div key={nurse.id} className="p-6 transition-all duration-200 hover:bg-gray-700">
+                    <div key={nurse.id} className="p-6 transition-all duration-200 hover:bg-gray-50">
                       <div className="flex items-center space-x-4 mb-4">
-                        <div className="h-12 w-12 rounded-full bg-green-900 flex items-center justify-center border border-green-700 flex-shrink-0">
-                          <User className="h-6 w-6 text-green-400" />
+                        <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center border border-green-300 flex-shrink-0">
+                          <User className="h-6 w-6 text-green-600" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-xl font-semibold text-white">{nurse.name}</h3>
-                          <div className="text-sm text-gray-300 space-y-1 mt-1">
+                          <h3 className="text-xl font-semibold text-gray-900">{nurse.name}</h3>
+                          <div className="text-sm text-gray-600 space-y-1 mt-1">
                             <div className="flex items-center">
                               <Mail className="h-4 w-4 mr-1.5 text-gray-400" />
                               {nurse.email}
@@ -527,18 +521,18 @@ const Dashboard = () => {
                       </div>
 
                       {/* Assigned Patients */}
-                      <div className="mt-4 border-t border-gray-700 pt-4">
-                        <p className="text-sm font-medium text-gray-300 mb-2">
+                      <div className="mt-4 border-t border-gray-200 pt-4">
+                        <p className="text-sm font-medium text-gray-600 mb-2">
                           Assigned Patients ({nurse.patient_ids ? nurse.patient_ids.length : 0}):
                         </p>
                         {nurse.patient_ids && nurse.patient_ids.length > 0 ? (
                           <div className="space-y-2">
                             {nurse.patient_ids.map((patientId) => (
-                              <div key={patientId} className="text-base text-gray-200 flex items-center justify-between bg-gray-700 px-3 py-2 rounded-md border border-gray-600 shadow-sm">
+                              <div key={patientId} className="text-base text-gray-700 flex items-center justify-between bg-gray-100 px-3 py-2 rounded-md border border-gray-200 shadow-sm">
                                 <span>{getPatientNameById(patientId)}</span>
                                 <button
                                   onClick={() => removePatientFromNurse(patientId, nurse.id)}
-                                  className="text-red-400 hover:text-red-200 transition-colors duration-200"
+                                  className="text-red-600 hover:text-red-800 transition-colors duration-200"
                                   title="Unassign patient"
                                 >
                                   <X className="h-4 w-4" />
@@ -547,22 +541,22 @@ const Dashboard = () => {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400 flex items-center bg-gray-700 p-2 rounded-md border border-gray-600">
+                          <span className="text-sm text-gray-500 flex items-center bg-gray-100 p-2 rounded-md border border-gray-200">
                             No patients currently assigned to this nurse.
                           </span>
                         )}
                       </div>
 
                       {/* Shift Information */}
-                      <div className="mt-3 text-sm text-gray-400 flex items-center pt-3 border-t border-gray-700">
-                        <Calendar className="h-4 w-4 inline mr-2 text-gray-500" />
+                      <div className="mt-3 text-sm text-gray-500 flex items-center pt-3 border-t border-gray-200">
+                        <Calendar className="h-4 w-4 inline mr-2 text-gray-400" />
                         <span className="font-medium">Shift:</span> {new Date(nurse.shift).toLocaleString()}
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="p-6 text-center text-gray-500 py-10">
-                    <User className="h-10 w-10 mx-auto text-gray-600 mb-4" />
+                    <User className="h-10 w-10 mx-auto text-gray-400 mb-4" />
                     <p className="text-lg">No nurses found in this hospital.</p>
                   </div>
                 )}
@@ -574,17 +568,17 @@ const Dashboard = () => {
 
       {/* Assignment Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-xl shadow-2xl p-8 w-full max-w-md transform transition-all duration-300 scale-100 animate-fade-in-up border border-gray-700">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md transform transition-all duration-300 scale-100 animate-fade-in-up border border-gray-200">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-white">Assign Patient to Nurse</h3>
+              <h3 className="text-2xl font-bold text-gray-900">Assign Patient to Nurse</h3>
               <button
                 onClick={() => {
                   setShowAssignModal(false);
                   setSelectedPatient(null);
                   setSelectedNurse(null);
                 }}
-                className="text-gray-400 hover:text-gray-200 transition-colors duration-200"
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
                 title="Close"
               >
                 <X className="h-7 w-7" />
@@ -593,12 +587,12 @@ const Dashboard = () => {
 
             <div className="space-y-6">
               <div>
-                <label htmlFor="select-patient" className="block text-sm font-medium text-gray-300 mb-2">Select Patient</label>
+                <label htmlFor="select-patient" className="block text-sm font-medium text-gray-700 mb-2">Select Patient</label>
                 <select
                   id="select-patient"
                   value={selectedPatient || ''}
                   onChange={(e) => setSelectedPatient(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-900"
                 >
                   <option value="">Choose a patient...</option>
                   {patients.filter(p => !p.assigned_nurse_ids?.includes(selectedNurse)).map((patient) => (
@@ -610,12 +604,12 @@ const Dashboard = () => {
               </div>
 
               <div>
-                <label htmlFor="select-nurse" className="block text-sm font-medium text-gray-300 mb-2">Select Nurse</label>
+                <label htmlFor="select-nurse" className="block text-sm font-medium text-gray-700 mb-2">Select Nurse</label>
                 <select
                   id="select-nurse"
                   value={selectedNurse || ''}
                   onChange={(e) => setSelectedNurse(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-900"
                 >
                   <option value="">Choose a nurse...</option>
                   {nurses.filter(n => !n.patient_ids?.includes(selectedPatient)).map((nurse) => (
@@ -634,7 +628,7 @@ const Dashboard = () => {
                   setSelectedPatient(null);
                   setSelectedNurse(null);
                 }}
-                className="px-5 py-2.5 text-base font-medium text-gray-300 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors duration-200 shadow-sm"
+                className="px-5 py-2.5 text-base font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-200 shadow-sm"
               >
                 Cancel
               </button>
