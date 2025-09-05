@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabaseClient';
 import {
@@ -25,83 +24,15 @@ import {
 // Supabase client
 const supabase = createClient();
 
-// Type definitions (kept the same)
-type Nurse = {
-  id: string;
-  auth_user_id: string;
-  name: string;
-  email: string;
-  phone_number: string;
-  shift: string;
-  hospital_id: string;
-  patient_ids: string[];
-};
-
-type Hospital = {
-  id: string;
-  name: string;
-  address: string;
-  email: string;
-  phone_number: string;
-};
-
-type Patient = {
-  id: string;
-  name: string;
-  email: string;
-  phone_number: string;
-  age: number;
-  gender: string;
-  room: string;
-  diagnosis: string;
-};
-
-type Medication = {
-  id: string;
-  patient_id: string;
-  name: string;
-  dosage: any;
-  createdat?: string;
-  updatedat?: string;
-};
-
-type MedicationFormType = {
-  name: string;
-  dosage: string;
-  frequency: string;
-  timing: string;
-  instructions: string;
-};
-
-type Alert = {
-  id: string;
-  name: string;
-  patient_id: string;
-  nurse_id: string;
-  hospital_id: string;
-  status: 'new' | 'acknowledged' | 'resolved';
-  seen: 'yes' | 'no';
-  createdat: string;
-  updatedat: string;
-};
-
 // --- MedicationForm Component Definition ---
-interface MedicationFormProps {
-  patientId: string;
-  initialMedication?: Medication | null;
-  onSave: (patientId: string, formData: MedicationFormType, medicationId: string | null) => Promise<void>;
-  onCancel: () => void;
-  isLoading: boolean;
-}
-
-const MedicationForm: React.FC<MedicationFormProps> = ({
+const MedicationForm = ({
   patientId,
   initialMedication,
   onSave,
   onCancel,
   isLoading,
 }) => {
-  const [medicationForm, setMedicationForm] = useState<MedicationFormType>({
+  const [medicationForm, setMedicationForm] = useState({
     name: '',
     dosage: '',
     frequency: '',
@@ -130,8 +61,6 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
     }
   }, [initialMedication]);
 
-  const isEditing = !!initialMedication;
-
   const handleSubmit = async () => {
     const dosageData = {
       amount: medicationForm.dosage,
@@ -142,7 +71,7 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
     await onSave(
       patientId,
       { ...medicationForm, dosage: JSON.stringify(dosageData) },
-      initialMedication?.id || null
+      initialMedication && initialMedication.id ? initialMedication.id : null
     );
   };
 
@@ -205,7 +134,6 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
           disabled={isLoading}
         ></textarea>
       </div>
-
       <div className="flex justify-end space-x-4 mt-6">
         <button
           onClick={onCancel}
@@ -231,17 +159,19 @@ const MedicationForm: React.FC<MedicationFormProps> = ({
 
 // --- NurseDashboard Component ---
 const NurseDashboard = () => {
-  const [nurse, setNurse] = useState<Nurse | null>(null);
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [hospitalInfo, setHospitalInfo] = useState<Hospital | null>(null);
+  const [nurse, setNurse] = useState(null);
+  const [patients, setPatients] = useState([]);
+  const [medications, setMedications] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [hospitalInfo, setHospitalInfo] = useState(null);
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
   const [showMedicationModal, setShowMedicationModal] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [editingMedication, setEditingMedication] = useState(null);
 
   const nurseId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
 
@@ -251,16 +181,13 @@ const NurseDashboard = () => {
       setLoading(false);
       return;
     }
-
     try {
       const { data: nurseData, error: nurseError } = await supabase
         .from('nurse')
         .select('*')
         .eq('id', nurseId)
         .single();
-
       if (nurseError) throw nurseError;
-
       setNurse(nurseData);
 
       // Fetch hospital info
@@ -294,15 +221,14 @@ const NurseDashboard = () => {
 
       // Fetch alerts for this nurse
       const { data: alertsData, error: alertsError } = await supabase
-        .from('alert') // CORRECTED: Changed 'alerts' to 'alert'
+        .from('alert')
         .select('*')
         .eq('nurse_id', nurseId)
         .order('createdat', { ascending: false });
       if (alertsError) throw alertsError;
       setAlerts(alertsData || []);
-
     } catch (err) {
-      setError(`Error fetching data: ${err.message}`);
+      setError(`Error fetching data: ${err.message || String(err)}`);
       console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
@@ -313,7 +239,7 @@ const NurseDashboard = () => {
     fetchNurseData();
   }, [fetchNurseData]);
 
-  const handleMedicationSave = async (patientId: string, formData: MedicationFormType, medicationId: string | null) => {
+  const handleMedicationSave = async (patientId, formData, medicationId) => {
     setLoading(true);
     try {
       const { name, dosage, frequency, timing, instructions } = formData;
@@ -343,7 +269,7 @@ const NurseDashboard = () => {
       setTimeout(() => setSuccessMessage(null), 3000);
       setError(null);
     } catch (err) {
-      setError(`Error saving medication: ${err.message}`);
+      setError(`Error saving medication: ${err.message || String(err)}`);
       setSuccessMessage(null);
       console.error('Error saving medication:', err);
     } finally {
@@ -351,7 +277,7 @@ const NurseDashboard = () => {
     }
   };
 
-  const handleMedicationDelete = async (medicationId: string) => {
+  const handleMedicationDelete = async (medicationId) => {
     if (window.confirm('Are you sure you want to delete this medication?')) {
       setLoading(true);
       try {
@@ -365,7 +291,7 @@ const NurseDashboard = () => {
         setTimeout(() => setSuccessMessage(null), 3000);
         setError(null);
       } catch (err) {
-        setError(`Error deleting medication: ${err.message}`);
+        setError(`Error deleting medication: ${err.message || String(err)}`);
         setSuccessMessage(null);
         console.error('Error deleting medication:', err);
       } finally {
@@ -374,16 +300,16 @@ const NurseDashboard = () => {
     }
   };
 
-  const handleAlertAcknowledge = async (alertId: string) => {
+  const handleAlertAcknowledge = async (alertId) => {
     try {
       const { error: updateError } = await supabase
-        .from('alert') // CORRECTED: Changed 'alerts' to 'alert'
+        .from('alert')
         .update({ status: 'acknowledged' })
         .eq('id', alertId);
       if (updateError) throw updateError;
       await fetchNurseData();
     } catch (err) {
-      setError(`Error acknowledging alert: ${err.message}`);
+      setError(`Error acknowledging alert: ${err.message || String(err)}`);
       console.error('Error acknowledging alert:', err);
     }
   };
@@ -394,10 +320,10 @@ const NurseDashboard = () => {
     window.location.href = '/';
   };
 
-  const getPatientNameById = (patientId: string) => {
-    const patient = patients.find(p => p.id === patientId);
+  const getPatientNameById = (patientId) => {
+    const patient = patients.find((p) => p.id === patientId);
     return patient ? patient.name : 'Unknown Patient';
-  };
+    };
 
   if (loading) {
     return (
@@ -444,7 +370,7 @@ const NurseDashboard = () => {
             </div>
             <div className="bg-green-50 px-4 py-2 rounded-full flex items-center shadow-sm border border-green-200">
               <User className="h-5 w-5 text-green-600 mr-2" />
-              <span className="text-sm font-semibold text-green-800">Hi, {nurse?.name}</span>
+              <span className="text-sm font-semibold text-green-800">Hi, {nurse && nurse.name}</span>
             </div>
             <button
               onClick={handleLogout}
@@ -564,10 +490,10 @@ const NurseDashboard = () => {
                       {/* Medication List */}
                       <div className="mt-4 border-t border-gray-200 pt-4">
                         <p className="text-sm font-medium text-gray-600 mb-2">Medication Plan:</p>
-                        {medications.filter(m => m.patient_id === patient.id).length > 0 ? (
+                        {medications.filter((m) => m.patient_id === patient.id).length > 0 ? (
                           <div className="space-y-2">
                             {medications
-                              .filter(m => m.patient_id === patient.id)
+                              .filter((m) => m.patient_id === patient.id)
                               .map((med) => {
                                 const dosageInfo = med.dosage || {};
                                 return (
