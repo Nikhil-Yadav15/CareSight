@@ -1,15 +1,17 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Upload, User, Mail, Lock, Phone, MapPin, Calendar, Activity, Home, Camera, Users, Plus, Minus, Hospital, ChevronRight } from 'lucide-react';
+import {
+  Upload, User, Mail, Lock, Phone, MapPin, Calendar, Activity, Home, Camera, Users, Plus, Minus, Hospital, ChevronRight
+} from 'lucide-react';
 import { createClient } from '@/lib/supabaseClient';
 
 const supabase = createClient();
 
 const roleDetails = {
-  hospital: { title: "Hospital", icon: Hospital, description: "Register as a hospital administrator." },
-  nurse: { title: "Nurse", icon: User, description: "Register as a healthcare professional." },
-  patients: { title: "Patient", icon: Users, description: "Register a new patient profile." },
+  hospital: { title: 'Hospital', icon: Hospital, description: 'Register as a hospital administrator.' },
+  nurse: { title: 'Nurse', icon: User, description: 'Register as a healthcare professional.' },
+  patients: { title: 'Patient', icon: Users, description: 'Register a new patient profile.' }
 };
 
 const RoleCard = ({ role, currentRole, setRole, Icon }) => (
@@ -27,7 +29,9 @@ const RoleCard = ({ role, currentRole, setRole, Icon }) => (
       <div className={`p-2 rounded-full ${currentRole === role ? 'bg-blue-200' : 'bg-gray-200'}`}>
         <Icon className={`w-5 h-5 ${currentRole === role ? 'text-blue-600' : 'text-gray-500'}`} />
       </div>
-      <span className={`font-semibold ml-3 ${currentRole === role ? 'text-blue-800' : 'text-gray-700'}`}>{roleDetails[role].title}</span>
+      <span className={`font-semibold ml-3 ${currentRole === role ? 'text-blue-800' : 'text-gray-700'}`}>
+        {roleDetails[role].title}
+      </span>
     </div>
     <ChevronRight className={`w-5 h-5 transition-transform ${currentRole === role ? 'text-blue-600' : 'text-gray-400'}`} />
   </button>
@@ -74,7 +78,7 @@ const FormSelect = ({ label, value, onChange, options, Icon, required = false })
 export default function RegisterPage() {
   const router = useRouter();
   const [role, setRole] = useState('hospital');
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
@@ -91,11 +95,10 @@ export default function RegisterPage() {
     photo_file: null,
     photo_url: '',
     family: [],
-    hospital_name_input: '',
+    hospital_name_input: ''
   });
-
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [hospitals, setHospitals] = useState<any[]>([]);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [hospitals, setHospitals] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const genderOptions = [
@@ -147,8 +150,8 @@ export default function RegisterPage() {
     { value: 'other', label: 'Other' }
   ];
 
-  const getDashboardRoute = (role: string) => {
-    switch (role) {
+  const getDashboardRoute = (r) => {
+    switch (r) {
       case 'hospital':
         return '/dashboard/hospital';
       case 'nurse':
@@ -160,12 +163,12 @@ export default function RegisterPage() {
     }
   };
 
-  const handleChange = (key: string, value: any) => {
+  const handleChange = (key, value) => {
     setForm({ ...form, [key]: value });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageUpload = (e) => {
+    const file = e.target.files && e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         alert('File size must be less than 5MB');
@@ -177,8 +180,8 @@ export default function RegisterPage() {
       }
       setForm({ ...form, photo_file: file });
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
+      reader.onload = (ev) => {
+        setImagePreview(ev.target && ev.target.result ? String(ev.target.result) : null);
       };
       reader.readAsDataURL(file);
     }
@@ -199,13 +202,13 @@ export default function RegisterPage() {
     });
   };
 
-  const removeFamilyMember = (index: number) => {
-    const updatedFamily = form.family.filter((_: any, i: number) => i !== index);
+  const removeFamilyMember = (index) => {
+    const updatedFamily = form.family.filter((_, i) => i !== index);
     setForm({ ...form, family: updatedFamily });
   };
 
-  const updateFamilyMember = (index: number, field: string, value: any) => {
-    const updatedFamily = form.family.map((member: any, i: number) =>
+  const updateFamilyMember = (index, field, value) => {
+    const updatedFamily = form.family.map((member, i) =>
       i === index ? { ...member, [field]: value } : member
     );
     setForm({ ...form, family: updatedFamily });
@@ -214,9 +217,7 @@ export default function RegisterPage() {
   useEffect(() => {
     async function fetchHospitals() {
       const { data } = await supabase.from('hospital').select('id, name');
-      if (data) {
-        setHospitals(data);
-      }
+      if (data) setHospitals(data);
     }
     if (role !== 'hospital') fetchHospitals();
   }, [role]);
@@ -226,7 +227,6 @@ export default function RegisterPage() {
       alert('Please fill in all required fields');
       return;
     }
-
     setIsLoading(true);
     let payload = { ...form };
 
@@ -239,19 +239,17 @@ export default function RegisterPage() {
           address: form.address,
           phone_number: form.phone_number,
           nurse_ids: [],
-          patient_ids: [],
+          patient_ids: []
         };
       } else if (role === 'nurse') {
         const match = hospitals.find(
-          (h: any) => h.name.toLowerCase() === form.hospital_name_input.toLowerCase()
+          (h) => String(h.name).toLowerCase() === String(form.hospital_name_input).toLowerCase()
         );
-
         if (!match) {
           alert('❌ Hospital name not found!');
           setIsLoading(false);
           return;
         }
-
         payload = {
           name: form.name,
           email: form.email,
@@ -260,62 +258,54 @@ export default function RegisterPage() {
           hospital_id: match.id,
           alert_ids: [],
           shift: new Date().toISOString(),
-          patient_ids: [],
+          patient_ids: []
         };
       } else if (role === 'patients') {
         const match = hospitals.find(
-          (h: any) => h.name.toLowerCase() === form.hospital_name_input.toLowerCase()
+          (h) => String(h.name).toLowerCase() === String(form.hospital_name_input).toLowerCase()
         );
-
         if (!match) {
           alert('❌ Hospital name not found!');
           setIsLoading(false);
           return;
         }
-
         let photo_url = form.photo_url;
         if (form.photo_file) {
           const fileExt = form.photo_file.name.split('.').pop();
           const fileName = `${Date.now()}.${fileExt}`;
           const filePath = `patient_photos/${fileName}`;
-
           const { error: uploadError } = await supabase.storage
             .from('patient-photos')
             .upload(filePath, form.photo_file);
-
           if (uploadError) {
             alert('❌ Image Upload Failed');
             setIsLoading(false);
             return;
           }
-
           const { data: publicURLData } = supabase
             .storage
             .from('patient-photos')
             .getPublicUrl(filePath);
-
-          photo_url = publicURLData?.publicUrl || '';
+          photo_url = (publicURLData && publicURLData.publicUrl) || '';
         }
-
         payload = {
           name: form.name,
           email: form.email,
           password: form.password,
           phone_number: form.phone_number,
-          age: parseInt(form.age),
+          age: parseInt(form.age, 10),
           gender: form.gender,
           room: form.room,
           diagnosis: form.diagnosis,
           preferred_lang: form.preferred_lang,
-          photo_url: photo_url,
+          photo_url,
           hospital_id: match.id,
           assigned_nurse_ids: [],
-          family: form.family,
+          family: form.family
         };
       }
 
       const table = role === 'hospital' ? 'hospital' : role === 'nurse' ? 'nurse' : 'patients';
-
       const { data: insertedData, error } = await supabase
         .from(table)
         .insert([payload])
@@ -329,12 +319,10 @@ export default function RegisterPage() {
 
       if (role === 'nurse' || role === 'patients') {
         const match = hospitals.find(
-          (h: any) => h.name.toLowerCase() === form.hospital_name_input.toLowerCase()
+          (h) => String(h.name).toLowerCase() === String(form.hospital_name_input).toLowerCase()
         );
-
         if (match && insertedData && insertedData.length > 0) {
           const newUserId = insertedData[0].id;
-
           const { data: hospitalData, error: hospitalFetchError } = await supabase
             .from('hospital')
             .select('nurse_ids, patient_ids')
@@ -377,8 +365,8 @@ export default function RegisterPage() {
         const dashboardRoute = getDashboardRoute(role);
         router.push(dashboardRoute);
       }
-    } catch (error) {
-      console.error('Registration error:', error);
+    } catch (err) {
+      console.error('Registration error:', err);
       alert('❌ Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -407,7 +395,7 @@ export default function RegisterPage() {
               label="Affiliated Hospital"
               value={form.hospital_name_input}
               onChange={(value) => handleChange('hospital_name_input', value)}
-              options={[{ value: '', label: 'Select Hospital' }, ...hospitals.map(h => ({ value: h.name, label: h.name }))]}
+              options={[{ value: '', label: 'Select Hospital' }, ...hospitals.map((h) => ({ value: h.name, label: h.name }))]}
               Icon={Hospital}
               required
             />
@@ -454,7 +442,7 @@ export default function RegisterPage() {
               label="Hospital"
               value={form.hospital_name_input}
               onChange={(value) => handleChange('hospital_name_input', value)}
-              options={[{ value: '', label: 'Select Hospital' }, ...hospitals.map(h => ({ value: h.name, label: h.name }))]}
+              options={[{ value: '', label: 'Select Hospital' }, ...hospitals.map((h) => ({ value: h.name, label: h.name }))]}
               Icon={Hospital}
               required
             />
@@ -465,7 +453,6 @@ export default function RegisterPage() {
               options={languageOptions}
               Icon={MapPin}
             />
-
             {/* Photo Upload */}
             <div className="pt-6 border-t border-gray-200">
               <h3 className="text-md font-semibold text-gray-800 mb-2 flex items-center">
@@ -490,7 +477,6 @@ export default function RegisterPage() {
                 Upload a profile photo (max 5MB, JPG/PNG).
               </p>
             </div>
-
             {/* Family Members Section */}
             <div className="pt-6 border-t border-gray-200">
               <div className="flex items-center justify-between mb-4">
@@ -507,7 +493,7 @@ export default function RegisterPage() {
               </div>
               <div className="space-y-4">
                 {form.family.length > 0 ? (
-                  form.family.map((member: any, index: number) => (
+                  form.family.map((member, index) => (
                     <div key={index} className="p-5 border border-gray-200 rounded-xl bg-gray-50 shadow-sm">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="text-sm font-semibold text-gray-700">Contact {index + 1}</h4>
@@ -613,7 +599,7 @@ export default function RegisterPage() {
             ))}
           </div>
         </div>
-        
+
         {/* Registration Form */}
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">General Information</h2>
@@ -658,7 +644,7 @@ export default function RegisterPage() {
             />
           </div>
         </div>
-        
+
         {/* Role-specific Fields */}
         <div className="mt-8">
           <h2 className="text-xl font-bold text-gray-800 mb-4">{roleDetails[role].title} Details</h2>
