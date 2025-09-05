@@ -135,7 +135,7 @@ const EmotionDetectorPage = () => {
       const now = Date.now();
       if (now - lastAlertTimestampRef.current < ALERT_COOLDOWN_DURATION) {
         console.log(
-          `Alert system is on global cooldown (${ALERT_COOLDOWN_DURATION / 1000}s). Skipping alert for ${detectedEmotion}.`
+          ``
         );
         return;
       }
@@ -155,8 +155,6 @@ const EmotionDetectorPage = () => {
           seen: 'No'
         });
         if (error) throw error;
-
-        console.log('Alert inserted successfully:', data);
         setAlertMessage(`Alert for ${detectedEmotion} logged successfully!`);
         lastAlertTimestampRef.current = now;
         currentNegativeEmotionRef.current = detectedEmotion;
