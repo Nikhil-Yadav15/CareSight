@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LogIn, Eye, EyeOff } from 'lucide-react';
@@ -55,9 +54,7 @@ export default function LoginPage() {
           localStorage.setItem('user_id', data.id);
           localStorage.setItem('role', role);
           localStorage.setItem('user_name', data.name);
-
           alert('✅ Login Successful!');
-
           const dashboardRoute = getDashboardRoute(role);
           router.push(dashboardRoute);
           return;
@@ -106,7 +103,6 @@ export default function LoginPage() {
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600 text-lg">Sign in to your secure portal</p>
         </div>
-
         <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="space-y-6">
           {/* Email Field */}
           <div className="group/input">
@@ -124,7 +120,6 @@ export default function LoginPage() {
               <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 group-hover/input:text-blue-600 transition-colors" size={20} />
             </div>
           </div>
-
           {/* Password Field */}
           <div className="group/input">
             <label className="block text-gray-700 font-medium mb-2 group-hover/input:text-blue-600 transition-colors duration-200">Password</label>
@@ -148,7 +143,6 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-
           {/* Login Button */}
           <button
             type="submit"
@@ -168,7 +162,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
         {/* Redirect to Sign Up */}
         <div className="mt-6 text-center text-gray-600">
           <p>Don't have an account?{' '}
