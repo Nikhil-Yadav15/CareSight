@@ -52,7 +52,6 @@ export default function PatientDashboard() {
 
         if (role !== 'patients') {
           setError('Access denied. Patient role required.');
-          console.log('Current role:', role);
           setLoading(false);
           return;
         }
