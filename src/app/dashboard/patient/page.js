@@ -22,62 +22,14 @@ import {
   Pill,
 } from 'lucide-react';
 
-// --- Type Definitions (Highly Recommended for clarity and type safety) ---
-interface Patient {
-  id: string;
-  name: string;
-  email: string;
-  phone_number: string;
-  age: number;
-  gender: string;
-  room: string;
-  diagnosis: string;
-  preferred_lang: string;
-  hospital_id: string;
-  assigned_nurse_ids: string[];
-  family: any[];
-}
-
-interface Hospital {
-  id: string;
-  name: string;
-  address: string;
-  email: string;
-  phone_number: string;
-}
-
-interface Nurse {
-  id: string;
-  name: string;
-  email: string;
-  phone_number: string;
-  shift: string;
-}
-
-interface MedicationDosage {
-  amount: string;
-  frequency: string;
-  timing: string;
-  instructions: string;
-}
-
-interface Medication {
-  id: string;
-  patient_id: string;
-  name: string;
-  dosage: MedicationDosage;
-  createdat: string;
-  updatedat: string;
-}
-
-const PatientDashboard: React.FC = () => {
+export default function PatientDashboard() {
   const supabase = createClient();
 
-  const [patientData, setPatientData] = useState<Patient | null>(null);
-  const [hospitalData, setHospitalData] = useState<Hospital | null>(null);
-  const [nurseData, setNurseData] = useState<Nurse | null>(null);
-  const [familyMembers, setFamilyMembers] = useState<any[]>([]);
-  const [medications, setMedications] = useState<Medication[]>([]);
+  const [patientData, setPatientData] = useState(null);
+  const [hospitalData, setHospitalData] = useState(null);
+  const [nurseData, setNurseData] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [medications, setMedications] = useState([]);
   const [editing, setEditing] = useState(false);
   const [phone, setPhone] = useState('');
   const [age, setAge] = useState('');
@@ -90,7 +42,7 @@ const PatientDashboard: React.FC = () => {
     is_emergency_contact: false,
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -118,7 +70,6 @@ const PatientDashboard: React.FC = () => {
         setPhone(patient.phone_number || '');
         setAge(patient.age || '');
 
-        // Fetch hospital data
         if (patient.hospital_id) {
           const { data: hospital, error: hospitalError } = await supabase
             .from('hospital')
@@ -129,7 +80,6 @@ const PatientDashboard: React.FC = () => {
           setHospitalData(hospital);
         }
 
-        // Fetch assigned nurse data
         if (patient.assigned_nurse_ids && patient.assigned_nurse_ids.length > 0) {
           const { data: nurse, error: nurseError } = await supabase
             .from('nurse')
@@ -140,10 +90,8 @@ const PatientDashboard: React.FC = () => {
           setNurseData(nurse);
         }
 
-        // Set family members from patient data directly
         setFamilyMembers(patient.family || []);
 
-        // Fetch Medications for this patient
         const { data: meds, error: medError } = await supabase
           .from('medication')
           .select('*')
@@ -154,7 +102,7 @@ const PatientDashboard: React.FC = () => {
         } else {
           setMedications(meds || []);
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error('Error in fetchData:', err.message);
         setError(err.message);
       } finally {
@@ -170,11 +118,11 @@ const PatientDashboard: React.FC = () => {
     setLoading(true);
     const { error: updateError } = await supabase
       .from('patients')
-      .update({ phone_number: phone, age: parseInt(age) })
+      .update({ phone_number: phone, age: parseInt(age, 10) })
       .eq('id', patientData.id);
 
     if (!updateError) {
-      setPatientData({ ...patientData, phone_number: phone, age: parseInt(age) });
+      setPatientData({ ...patientData, phone_number: phone, age: parseInt(age, 10) });
       setEditing(false);
     } else {
       console.error('Error updating patient data:', updateError);
@@ -184,18 +132,14 @@ const PatientDashboard: React.FC = () => {
   };
 
   const handleAddFamily = async () => {
-    if (
-      !newFamilyMember.name.trim() ||
-      !newFamilyMember.email.trim() ||
-      !patientData
-    ) {
+    if (!newFamilyMember.name.trim() || !newFamilyMember.email.trim() || !patientData) {
       alert('Name and email are required for a family member.');
       return;
     }
 
     const updatedFamily = [...familyMembers, newFamilyMember];
-
     setLoading(true);
+
     const { error: familyUpdateError } = await supabase
       .from('patients')
       .update({ family: updatedFamily })
@@ -218,7 +162,7 @@ const PatientDashboard: React.FC = () => {
     setLoading(false);
   };
 
-  const handleDeleteFamily = async (index: number) => {
+  const handleDeleteFamily = async (index) => {
     if (!patientData) return;
     const updated = [...familyMembers];
     updated.splice(index, 1);
@@ -257,40 +201,38 @@ const PatientDashboard: React.FC = () => {
     setLoading(false);
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-gray-300">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-          <p className="text-lg">Loading patient dashboard...</p>
-        </div>
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-gray-300">
+      <div className="flex flex-col items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
+        <p className="text-lg">Loading patient dashboard...</p>
       </div>
-    );
+    </div>
+  );
 
-  if (error)
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-red-500 p-4">
-        <AlertCircle className="h-10 w-10 mb-4" />
-        <p className="text-xl font-semibold text-center">{error}</p>
-        {error.includes('Access denied') && (
-          <p className="text-gray-400 mt-2 text-center">
-            Please ensure you are logged in with a patient account.
-          </p>
-        )}
-        <button
-          onClick={handleLogout}
-          className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
-        >
-          Go to Login
-        </button>
-      </div>
-    );
+  if (error) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-red-500 p-4">
+      <AlertCircle className="h-10 w-10 mb-4" />
+      <p className="text-xl font-semibold text-center">{error}</p>
+      {error.includes('Access denied') && (
+        <p className="text-gray-400 mt-2 text-center">
+          Please ensure you are logged in with a patient account.
+        </p>
+      )}
+      <button
+        onClick={handleLogout}
+        className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors"
+      >
+        Go to Login
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-white text-gray-800 px-6 py-10">
       <div className="max-w-4xl mx-auto space-y-8">
-        
-        {/* --- Header & Action Buttons --- */}
+
+        {/* Header & Action Buttons */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-extrabold text-gray-900 drop-shadow-lg">Patient Dashboard</h1>
           <div className="flex space-x-4">
@@ -310,7 +252,7 @@ const PatientDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* --- Patient Overview Card --- */}
+        {/* Patient Overview Card */}
         {patientData ? (
           <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
             <h2 className="text-2xl font-bold mb-4 text-orange-600 flex items-center">
@@ -402,7 +344,7 @@ const PatientDashboard: React.FC = () => {
 
         <hr className="my-8 border-gray-300" />
 
-        {/* --- Assigned Nurse Card (NEW) --- */}
+        {/* Assigned Nurse Card */}
         {nurseData && (
           <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
             <h2 className="text-2xl font-bold mb-4 text-emerald-600 flex items-center">
@@ -428,7 +370,7 @@ const PatientDashboard: React.FC = () => {
 
         <hr className="my-8 border-gray-300" />
 
-        {/* --- Hospital Info Card (retained) --- */}
+        {/* Hospital Info Card */}
         {hospitalData && (
           <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
             <h2 className="text-2xl font-bold mb-4 text-blue-600 flex items-center">
@@ -438,7 +380,7 @@ const PatientDashboard: React.FC = () => {
             <div className="space-y-2 text-gray-700">
               <p className="flex items-center">
                 <MapPin className="h-5 w-5 mr-3 text-gray-500" />
-                {hospitalData.name} - {hospitalData.address}
+                {hospitalData.name} – {hospitalData.address}
               </p>
               <p className="flex items-center">
                 <Mail className="h-5 w-5 mr-3 text-gray-500" />
@@ -454,7 +396,7 @@ const PatientDashboard: React.FC = () => {
 
         <hr className="my-8 border-gray-300" />
 
-        {/* --- Medications Card (Prominent for Patient) --- */}
+        {/* Medications Card */}
         <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
           <h2 className="text-2xl font-bold mb-4 text-pink-600 flex items-center">
             <Pill className="h-6 w-6 mr-3 text-pink-600" />
@@ -484,7 +426,7 @@ const PatientDashboard: React.FC = () => {
 
         <hr className="my-8 border-gray-300" />
 
-        {/* --- Family Members Card --- */}
+        {/* Family Members Card */}
         <div className="bg-gray-100 p-6 rounded-xl shadow-lg border border-gray-200">
           <h2 className="text-2xl font-bold mb-4 text-purple-600 flex items-center">
             <Users className="h-6 w-6 mr-3 text-purple-600" />
@@ -494,23 +436,12 @@ const PatientDashboard: React.FC = () => {
           {familyMembers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {familyMembers.map((member, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-5 rounded-lg shadow-md flex flex-col justify-between items-start border border-gray-300"
-                >
+                <div key={index} className="bg-white p-5 rounded-lg shadow-md flex flex-col justify-between items-start border border-gray-300">
                   <div className="text-sm text-gray-700 space-y-1 w-full">
-                    <p>
-                      <strong>Name:</strong> {member.name}
-                    </p>
-                    <p>
-                      <strong>Email:</strong> {member.email}
-                    </p>
-                    <p>
-                      <strong>Phone:</strong> {member.phone_number}
-                    </p>
-                    <p>
-                      <strong>Relationship:</strong> {member.relationship}
-                    </p>
+                    <p><strong>Name:</strong> {member.name}</p>
+                    <p><strong>Email:</strong> {member.email}</p>
+                    <p><strong>Phone:</strong> {member.phone_number}</p>
+                    <p><strong>Relationship:</strong> {member.relationship}</p>
                     <p>
                       <strong>Emergency Contact:</strong>{' '}
                       <span className={member.is_emergency_contact ? 'text-green-600' : 'text-red-600'}>
@@ -518,10 +449,7 @@ const PatientDashboard: React.FC = () => {
                       </span>
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleDeleteFamily(index)}
-                    className="mt-4 bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center self-end"
-                  >
+                  <button onClick={() => handleDeleteFamily(index)} className="mt-4 bg-red-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center self-end">
                     <Trash2 className="h-4 w-4 mr-2" /> Delete
                   </button>
                 </div>
@@ -566,18 +494,12 @@ const PatientDashboard: React.FC = () => {
                 <input
                   type="checkbox"
                   checked={newFamilyMember.is_emergency_contact}
-                  onChange={(e) =>
-                    setNewFamilyMember({ ...newFamilyMember, is_emergency_contact: e.target.checked })
-                  }
+                  onChange={(e) => setNewFamilyMember({ ...newFamilyMember, is_emergency_contact: e.target.checked })}
                   className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500 bg-gray-200 border-gray-400"
                 />
                 Emergency Contact
               </label>
-              <button
-                onClick={handleAddFamily}
-                className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-md flex items-center mt-4"
-                disabled={loading}
-              >
+              <button onClick={handleAddFamily} className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-md flex items-center mt-4" disabled={loading}>
                 <Plus className="h-4 w-4 mr-2" /> {loading ? 'Adding...' : 'Add Family Member'}
               </button>
             </div>
@@ -586,6 +508,4 @@ const PatientDashboard: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default PatientDashboard;
+}
