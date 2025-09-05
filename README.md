@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 👀✨ CareSight – Eye-Controlled Connected Care ✨👀
 
-## Getting Started
+> **CareSight** is a hospital-focused web platform paired with a patient mobile app that empowers ventilated and immobile patients to communicate using only eye movements.  
+> The ecosystem includes **dashboards for admins & nurses**, **status access for guardians**, and **entertainment features for patients** — ensuring independence, faster response times, and peace of mind for families.  
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🌟 Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🏥 Admin Dashboard
+- Assign patients dynamically to available nurses  
+- Add & manage nurse accounts with ease  
+- Centralized control for workload balancing  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 👩‍⚕ Nurse Dashboard
+- Access detailed patient information (conditions, medicines, dosage)  
+- Receive **real-time patient alerts** triggered directly by eye control  
+- Track medication schedules and assignments seamlessly  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 👨‍👩‍👧 Guardian Access
+- Family members/guardians can securely log in  
+- View patient’s current status, progress, and alerts  
+- Stay connected and reassured  
 
-## Learn More
+### 📱 Patient App
+- Communicate hands-free using **face & eye tracking**  
+- Entertainment features 🎵🎬 (music, videos, calming visuals)  
+- Send alerts & requests directly to nurses  
+- Medication reminders and wellbeing support  
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🗄️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Frontend (Website):** [Next.js](https://nextjs.org/)  
+- **Backend & APIs:** [Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)  
+- **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL + Realtime + Auth)  
+- **Face Tracking:** [face-api.js](https://github.com/justadudewhohacks/face-api.js) (eye gaze + blink detection)  
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📊 Database Schema (Simplified)
+
+```mermaid
+erDiagram
+    HOSPITAL {
+      uuid id PK
+      text name
+      text address
+      text email
+      text password
+      text phone_number
+      array nurse_ids
+      array patient_ids
+      timestamptz createdat
+      timestamptz updatedat
+    }
+
+    NURSE {
+      uuid id PK
+      text name
+      text email
+      bigint phone_number
+      text password
+      uuid hospital_id FK "→ hospital.id"
+      array patient_ids
+      array alert_ids
+      timestamptz shift
+      timestamptz createdat
+      timestamptz updatedat
+    }
+
+    PATIENTS {
+      uuid id PK
+      text name
+      int age
+      text gender
+      text room
+      text diagnosis
+      text email
+      text password
+      bigint phone_number
+      text photo_url
+      jsonb family
+      text last_alert
+      uuid medications_id FK "→ medication.id"
+      uuid hospital_id FK "→ hospital.id"
+      array assigned_nurse_ids
+      user_defined preferred_lang
+      timestamptz createdat
+      timestamptz updatedat
+    }
+
+    MEDICATION {
+      uuid id PK
+      text name
+      jsonb dosage
+      uuid patient_id
+      timestamptz createdat
+      timestamptz updatedat
+    }
+
+    ALERT {
+      uuid id PK
+      text name
+      uuid patient_id FK "→ patients.id"
+      uuid nurse_id FK "→ nurse.id"
+      uuid hospital_id FK "→ hospital.id"
+      user_defined status
+      user_defined seen
+      timestamptz createdat
+      timestamptz updatedat
+    }
+
+    ENTERTAINMENT {
+      text type
+      text title
+      text genre
+      text artist
+      interval duration
+      text poster_url
+      text content_url
+      timestamptz createdat
+      timestamptz updatedat
+    }
+
+    %% Relationships
+    HOSPITAL ||--o{ NURSE : employs
+    HOSPITAL ||--o{ PATIENTS : hosts
+    NURSE ||--o{ ALERT : responds_to
+    NURSE ||--o{ PATIENTS : assigned_to
+    PATIENTS ||--o{ ALERT : triggers
+    PATIENTS ||--o{ MEDICATION : prescribed
